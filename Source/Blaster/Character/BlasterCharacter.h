@@ -2,8 +2,12 @@
 
 #pragma once
 
+
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "InputMappingContext.h"
+#include "InputAction.h"
+
 #include "BlasterCharacter.generated.h"
 
 UCLASS()
@@ -15,17 +19,32 @@ public:
 	ABlasterCharacter();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputMappingContext* InputMapping;
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* MoveAction;
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* LookAction;
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* JumpAction;
+
+
 protected:
+	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-private:	
+	void Move(const FInputActionInstance& Instance);
+	void Look(const FInputActionInstance& Instance);
+	void Jump(const FInputActionInstance& Instance);
+
+private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class USpringArmComponent* CameraBoom;
-	
+
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class UCameraComponent* FollowCamera;
-
-
-public:
-
 };

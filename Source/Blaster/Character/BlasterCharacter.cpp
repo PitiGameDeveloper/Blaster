@@ -2,6 +2,12 @@
 
 
 #include "BlasterCharacter.h"
+
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 
@@ -16,26 +22,88 @@ ABlasterCharacter::ABlasterCharacter()
 	CameraBoom->bUsePawnControlRotation = true;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	CameraBoom->bUsePawnControlRotation = false;
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); FollowCamera->bUsePawnControlRotation = false;
 
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 }
 
+void ABlasterCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	if (UEnhancedInputComponent* Input = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+		if (MoveAction)
+		{
+			UE_LOG(LogTemp, Display, TEXT("Binding MoveAction"));
+			Input->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Move);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("MoveAction is null!"));
+		}
+		Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Look);
+		Input->BindAction(JumpAction, ETriggerEvent::Started, this, &ABlasterCharacter::Jump);
+	}
+}
+
+// Called when the game starts or when spawned
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	if (Controller)
+	{
+		UE_LOG(LogTemp, Display, TEXT("%s is possessed by %s"), *GetName(), *Controller->GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s is not possessed"), *GetName());
+	}
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		UE_LOG(LogTemp, Display, TEXT("Player Controller is %s"), *PlayerController->GetName());
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			if (InputMapping)
+			{
+				Subsystem->AddMappingContext(InputMapping, 0);
+				UE_LOG(LogTemp, Display, TEXT("Input Mapping Context added"));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("InputMapping is null!"));
+			}
+		}
+	}
+
+}
+
+void ABlasterCharacter::Move(const FInputActionInstance& Instance)
+{
+	FVector2D MovementDirection = Instance.GetValue().Get<FVector2D>();
+	const FRotator Rotation(0.f, Controller->GetControlRotation().Yaw, Controller->GetControlRotation().Roll);
+	const FVector RightDirection(FRotationMatrix(Rotation).GetUnitAxis(EAxis::Y));
+	const FVector ForwardDirection(FRotationMatrix(Rotation).GetUnitAxis(EAxis::X));
+	AddMovementInput(RightDirection, MovementDirection.X);
+	AddMovementInput(ForwardDirection, MovementDirection.Y);
+}
+
+void ABlasterCharacter::Look(const FInputActionInstance& Instance)
+{
+	FVector2D LookDirection = Instance.GetValue().Get<FVector2D>();
+	AddControllerYawInput(LookDirection.X);
+	AddControllerPitchInput(LookDirection.Y);
+}
+
+void ABlasterCharacter::Jump(const FInputActionInstance& Instance)
+{
+	Super::Jump();
+	UE_LOG(LogTemp, Display, TEXT("JumpAction"));
 }
 
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-}
-
-void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
 
