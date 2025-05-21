@@ -120,6 +120,8 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 	if (OverlappingWeapon)
 	{
 		OverlappingWeapon->ShowPickupWidget(false);
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("HIDE_SERVER"));
 	}
 	OverlappingWeapon = Weapon;
 	if (IsLocallyControlled())
@@ -127,6 +129,8 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 		if (OverlappingWeapon)
 		{
 			OverlappingWeapon->ShowPickupWidget(true);
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("SHOW_SERVER"));
 		}
 	}
 }
@@ -137,11 +141,15 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 	if (OverlappingWeapon)
 	{
 		OverlappingWeapon->ShowPickupWidget(true);
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("SHOW_REPLICATED"));
 	}
 
 	if (LastWeapon)
 	{
 		LastWeapon->ShowPickupWidget(false);
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("HIDE_REPLICATED"));
 	}
 }
 
@@ -170,10 +178,28 @@ void ABlasterCharacter::Jump(const FInputActionInstance& Instance)
 
 void ABlasterCharacter::EquipPressed(const FInputActionInstance& Instance)
 {
-	if (Combat && HasAuthority())
+	if (Combat)
+	{
+		if (HasAuthority())
+			Combat->EquipWeapon(OverlappingWeapon);
+		else
+			ServerEquipButtonPressed();
+	}
+}
+
+void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
+{
+	if (Combat)
 	{
 		Combat->EquipWeapon(OverlappingWeapon);
 	}
+}
+
+
+
+bool ABlasterCharacter::IsWeaponEquipped()
+{
+	return (Combat && Combat->EquippedWeapon);
 }
 
 
