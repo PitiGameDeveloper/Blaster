@@ -14,6 +14,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
+#include "Blaster/CodeUtils/CodeUtils.h"
 
 
 // Sets default values
@@ -37,6 +38,8 @@ ABlasterCharacter::ABlasterCharacter()
 
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);
+
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 }
 
 void ABlasterCharacter::PostInitializeComponents()
@@ -57,52 +60,57 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 }
 
-
 void ABlasterCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	if (UEnhancedInputComponent* Input = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		if (MoveAction)
-		{
-			UE_LOG(LogTemp, Display, TEXT("Binding MoveAction"));
 			Input->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Move);
+		else
+			CodeUtils::PrintToScreen("Missing MoveAction IA");
+
+		if (LookAction)
+			Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Look);
+		else
+			CodeUtils::PrintToScreen("Missing LookAction IA");
+
+		if (JumpAction)
+			Input->BindAction(JumpAction, ETriggerEvent::Started, this, &ABlasterCharacter::Jump);
+		else
+			CodeUtils::PrintToScreen("Missing JumpAction IA");
+
+		if (EquipAction)
+			Input->BindAction(EquipAction, ETriggerEvent::Started, this, &ABlasterCharacter::EquipPressed);
+		else
+			CodeUtils::PrintToScreen("Missing EquipAction IA");
+
+		if (CrouchAction)
+			Input->BindAction(CrouchAction, ETriggerEvent::Started, this, &ABlasterCharacter::CrouchPressed);
+		else
+			CodeUtils::PrintToScreen("Missing CrouchAction IA");
+
+		if (AimAction)
+		{
+			Input->BindAction(AimAction, ETriggerEvent::Started, this, &ABlasterCharacter::AimPressed);
+			Input->BindAction(AimAction, ETriggerEvent::Completed, this, &ABlasterCharacter::AimReleased);
 		}
 		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("MoveAction is null!"));
-		}
-		Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Look);
-		Input->BindAction(JumpAction, ETriggerEvent::Started, this, &ABlasterCharacter::Jump);
-		Input->BindAction(EquipAction, ETriggerEvent::Started, this, &ABlasterCharacter::EquipPressed);
+			CodeUtils::PrintToScreen("Missing AimAction IA");
+
 	}
 }
 
-// Called when the game starts or when spawned
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	if (Controller)
-	{
-		UE_LOG(LogTemp, Display, TEXT("%s is possessed by %s"), *GetName(), *Controller->GetName());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("%s is not possessed"), *GetName());
-	}
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
-		UE_LOG(LogTemp, Display, TEXT("Player Controller is %s"), *PlayerController->GetName());
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			if (InputMapping)
 			{
 				Subsystem->AddMappingContext(InputMapping, 0);
-				UE_LOG(LogTemp, Display, TEXT("Input Mapping Context added"));
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("InputMapping is null!"));
 			}
 		}
 	}
@@ -120,8 +128,6 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 	if (OverlappingWeapon)
 	{
 		OverlappingWeapon->ShowPickupWidget(false);
-		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("HIDE_SERVER"));
 	}
 	OverlappingWeapon = Weapon;
 	if (IsLocallyControlled())
@@ -129,8 +135,6 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 		if (OverlappingWeapon)
 		{
 			OverlappingWeapon->ShowPickupWidget(true);
-			if (GEngine)
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("SHOW_SERVER"));
 		}
 	}
 }
@@ -141,15 +145,11 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 	if (OverlappingWeapon)
 	{
 		OverlappingWeapon->ShowPickupWidget(true);
-		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("SHOW_REPLICATED"));
 	}
 
 	if (LastWeapon)
 	{
 		LastWeapon->ShowPickupWidget(false);
-		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("HIDE_REPLICATED"));
 	}
 }
 
@@ -195,11 +195,40 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 	}
 }
 
+void ABlasterCharacter::CrouchPressed(const FInputActionInstance& Instance)
+{
+	if (bIsCrouched)
+		UnCrouch();
+	else
+		Crouch();
+}
 
+void ABlasterCharacter::AimPressed(const FInputActionInstance& Instance)
+{
+	CodeUtils::PrintToScreen("AimStarted");
+	if (Combat)
+	{
+		Combat->SetAiming(true);
+	}
+}
+
+void ABlasterCharacter::AimReleased(const FInputActionInstance& Instance)
+{
+	CodeUtils::PrintToScreen("AimFinished", FColor::Blue);
+	if (Combat)
+	{
+		Combat->SetAiming(false);
+	}
+}
 
 bool ABlasterCharacter::IsWeaponEquipped()
 {
 	return (Combat && Combat->EquippedWeapon);
+}
+
+bool ABlasterCharacter::IsAiming()
+{
+	return (Combat && Combat->bAiming);
 }
 
 

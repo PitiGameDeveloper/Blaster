@@ -30,6 +30,9 @@ protected:
 	void Look(const FInputActionInstance& Instance);
 	void Jump(const FInputActionInstance& Instance);
 	void EquipPressed(const FInputActionInstance& Instance);
+	void CrouchPressed(const FInputActionInstance& Instance);
+	void AimPressed(const FInputActionInstance& Instance);
+	void AimReleased(const FInputActionInstance& Instance);
 
 private:
 
@@ -47,6 +50,12 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Input)
 	UInputAction* EquipAction;
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* CrouchAction;
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* AimAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadonly, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* OverheadWidget;
@@ -72,4 +81,5 @@ private:
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
+	bool IsAiming();
 };
