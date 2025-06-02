@@ -15,6 +15,7 @@
 #include "Blaster/Weapon/Weapon.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Blaster/CodeUtils/CodeUtils.h"
+#include "Components/CapsuleComponent.h"
 
 
 // Sets default values
@@ -40,6 +41,10 @@ ABlasterCharacter::ABlasterCharacter()
 	Combat->SetIsReplicated(true);
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+
+
 }
 
 void ABlasterCharacter::PostInitializeComponents()
@@ -178,8 +183,10 @@ void ABlasterCharacter::Jump(const FInputActionInstance& Instance)
 
 void ABlasterCharacter::EquipPressed(const FInputActionInstance& Instance)
 {
+	CodeUtils::PrintToScreen("Pressed");
 	if (Combat)
 	{
+		CodeUtils::PrintToScreen("inCombat");
 		if (HasAuthority())
 			Combat->EquipWeapon(OverlappingWeapon);
 		else
@@ -205,7 +212,6 @@ void ABlasterCharacter::CrouchPressed(const FInputActionInstance& Instance)
 
 void ABlasterCharacter::AimPressed(const FInputActionInstance& Instance)
 {
-	CodeUtils::PrintToScreen("AimStarted");
 	if (Combat)
 	{
 		Combat->SetAiming(true);
@@ -214,7 +220,6 @@ void ABlasterCharacter::AimPressed(const FInputActionInstance& Instance)
 
 void ABlasterCharacter::AimReleased(const FInputActionInstance& Instance)
 {
-	CodeUtils::PrintToScreen("AimFinished", FColor::Blue);
 	if (Combat)
 	{
 		Combat->SetAiming(false);
