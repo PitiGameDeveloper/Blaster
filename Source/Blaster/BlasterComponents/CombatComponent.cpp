@@ -22,7 +22,7 @@ void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	/*if (Character)
+	if (Character)
 	{
 		CodeUtils::PrintToScreen("WA");
 		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
@@ -32,7 +32,7 @@ void UCombatComponent::BeginPlay()
 	{
 		CodeUtils::PrintToScreen("Crouch speed force setted in combat component");
 		BaseCrouchSpeed = 350.f;
-	}*/
+	}
 }
 
 void UCombatComponent::SetAiming(bool bIsAiming)
