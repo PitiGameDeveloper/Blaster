@@ -24,7 +24,6 @@ void UCombatComponent::BeginPlay()
 
 	if (Character)
 	{
-		CodeUtils::PrintToScreen("WA");
 		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 		BaseCrouchSpeed = Character->GetCharacterMovement()->MaxWalkSpeedCrouched;
 	}
