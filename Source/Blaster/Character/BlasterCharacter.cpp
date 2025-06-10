@@ -16,6 +16,7 @@
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Blaster/CodeUtils/CodeUtils.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 // Sets default values
@@ -126,6 +127,8 @@ void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	AimOffset(DeltaTime);
+
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
@@ -224,6 +227,36 @@ void ABlasterCharacter::AimReleased(const FInputActionInstance& Instance)
 	{
 		Combat->SetAiming(false);
 	}
+}
+
+void ABlasterCharacter::AimOffset(float DeltaTime)
+{
+	if (Combat && Combat->EquippedWeapon == nullptr)
+		return;
+
+	FVector velocity = GetVelocity();
+	velocity.Z = 0.f;
+	float speed = velocity.Size();
+
+	bool bIsInAir = GetCharacterMovement()->IsFalling();
+
+	if (speed == 0.f && !bIsInAir)
+	{
+		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
+
+		AO_Yaw = DeltaAimRotation.Yaw;
+		bUseControllerRotationYaw = false;
+	}
+	if (speed > 0.f || bIsInAir)
+	{
+		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		
+		AO_Yaw = 0.f;
+		bUseControllerRotationYaw = true;
+	}
+
+	AO_Pitch = GetBaseAimRotation().Pitch;
 }
 
 bool ABlasterCharacter::IsWeaponEquipped()
