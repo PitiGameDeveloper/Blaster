@@ -64,6 +64,8 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
 
+	DOREPLIFETIME(ABlasterCharacter, AO_Yaw);
+
 }
 
 void ABlasterCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -239,24 +241,50 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 	float speed = velocity.Size();
 
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
-
-	if (speed == 0.f && !bIsInAir)
+	if (IsLocallyControlled())
 	{
-		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
-		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
+		if (speed == 0.f && !bIsInAir)
+		{
+			/*
+			FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+			FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
 
-		AO_Yaw = DeltaAimRotation.Yaw;
-		bUseControllerRotationYaw = false;
+			AO_Yaw = DeltaAimRotation.Yaw;
+			*/
+			const FVector  AimDirWS = GetBaseAimRotation().Vector();
+			const FVector  AimDirLS = ActorToWorld().InverseTransformVectorNoScale(AimDirWS);
+			const FRotator AimRotLS = AimDirLS.Rotation();
+
+			AO_Yaw = AimRotLS.Yaw;
+
+			bUseControllerRotationYaw = false;
+		}
+		if (speed > 0.f || bIsInAir)
+		{
+			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+
+			AO_Yaw = 0.f;
+			bUseControllerRotationYaw = true;
+		}
 	}
-	if (speed > 0.f || bIsInAir)
-	{
-		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
-		
-		AO_Yaw = 0.f;
-		bUseControllerRotationYaw = true;
-	}
+
+
+	if (!HasAuthority() && IsLocallyControlled())
+		CodeUtils::PrintFloatToScreen(AO_Yaw);
+	if (!HasAuthority() && !IsLocallyControlled())
+		CodeUtils::PrintFloatToScreen(AO_Yaw,FColor::Red);
+	if (HasAuthority() && !IsLocallyControlled())
+		CodeUtils::PrintFloatToScreen(AO_Yaw, FColor::Blue);
 
 	AO_Pitch = GetBaseAimRotation().Pitch;
+
+	if (AO_Pitch > 90.f && !IsLocallyControlled())
+	{
+		FVector2D InRange(270.f, 360.f);
+		FVector2D OutRange(-90.f, 0.f);
+
+		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+	}
 }
 
 bool ABlasterCharacter::IsWeaponEquipped()

@@ -80,7 +80,10 @@ private:
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
 
+	UPROPERTY(Replicated)
 	float AO_Yaw;
+
+
 	float AO_Pitch;
 	FRotator StartingAimRotation;
 
