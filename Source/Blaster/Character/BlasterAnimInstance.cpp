@@ -55,6 +55,8 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float deltaTime)
 	AO_Yaw = BlasterCharacter->GetAO_Yaw();
 	AO_Pitch = BlasterCharacter->GetAO_Pitch();
 
+	TurningInPlace = BlasterCharacter->GetTurningInPlace();
+
 	if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && BlasterCharacter->GetMesh())
 	{
 		LeftHandTransoform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSoket"), ERelativeTransformSpace::RTS_World);

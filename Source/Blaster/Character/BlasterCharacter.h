@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "InputMappingContext.h"
 #include "InputAction.h"
+#include "Blaster/BlasterTypes/TurnInPlace.h"
 
 #include "BlasterCharacter.generated.h"
 
@@ -83,9 +84,12 @@ private:
 	UPROPERTY(Replicated)
 	float AO_Yaw;
 
-
 	float AO_Pitch;
 	FRotator StartingAimRotation;
+
+	ETurnInPlace TurningInPlace;
+
+	void TurnInPlace(float DeltaTime);
 
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
@@ -96,5 +100,7 @@ public:
 	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; }
 
 	AWeapon* GetEquippedWeapon();
+
+	FORCEINLINE ETurnInPlace GetTurningInPlace() const { return TurningInPlace; }
 
 };

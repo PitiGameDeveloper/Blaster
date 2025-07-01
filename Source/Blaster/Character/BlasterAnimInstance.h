@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "Blaster/BlasterTypes/TurnInPlace.h"
 #include "BlasterAnimInstance.generated.h"
 
 /**
@@ -61,6 +62,9 @@ private:
 	float AO_Pitch;
 
 	UPROPERTY(BlueprintReadOnly, Category = LefthandTransform, meta = (AllowPrivateAccess = "true"))
-
 	FTransform LeftHandTransoform;
+
+	UPROPERTY(BlueprintReadOnly, Category = LefthandTransform, meta = (AllowPrivateAccess = "true"))
+	ETurnInPlace  TurningInPlace;
+
 };

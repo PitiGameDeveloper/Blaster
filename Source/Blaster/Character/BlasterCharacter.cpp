@@ -46,6 +46,9 @@ ABlasterCharacter::ABlasterCharacter()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 
 
+	TurningInPlace = ETurnInPlace::ETIP_NotTurning;
+
+
 }
 
 void ABlasterCharacter::PostInitializeComponents()
@@ -131,6 +134,19 @@ void ABlasterCharacter::Tick(float DeltaTime)
 
 	AimOffset(DeltaTime);
 
+}
+
+void ABlasterCharacter::TurnInPlace(float DeltaTime)
+{
+	CodeUtils::PrintFloatToScreen(AO_Yaw);
+	if (AO_Yaw > 90.f)
+	{
+		TurningInPlace = ETurnInPlace::ETIP_Right;
+	}
+	else if (AO_Yaw < -90.f)
+	{
+		TurningInPlace = ETurnInPlace::ETIP_Left;
+	}
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
@@ -251,6 +267,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 
 			AO_Yaw = DeltaAimRotation.Yaw;
 			*/
+			
 			const FVector  AimDirWS = GetBaseAimRotation().Vector();
 			const FVector  AimDirLS = ActorToWorld().InverseTransformVectorNoScale(AimDirWS);
 			const FRotator AimRotLS = AimDirLS.Rotation();
@@ -258,6 +275,9 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 			AO_Yaw = AimRotLS.Yaw;
 
 			bUseControllerRotationYaw = false;
+			
+			TurnInPlace(DeltaTime);
+
 		}
 		if (speed > 0.f || bIsInAir)
 		{
