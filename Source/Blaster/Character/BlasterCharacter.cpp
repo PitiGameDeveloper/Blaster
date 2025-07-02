@@ -136,19 +136,6 @@ void ABlasterCharacter::Tick(float DeltaTime)
 
 }
 
-void ABlasterCharacter::TurnInPlace(float DeltaTime)
-{
-	CodeUtils::PrintFloatToScreen(AO_Yaw);
-	if (AO_Yaw > 90.f)
-	{
-		TurningInPlace = ETurnInPlace::ETIP_Right;
-	}
-	else if (AO_Yaw < -90.f)
-	{
-		TurningInPlace = ETurnInPlace::ETIP_Left;
-	}
-}
-
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 {
 	if (OverlappingWeapon)
@@ -247,6 +234,29 @@ void ABlasterCharacter::AimReleased(const FInputActionInstance& Instance)
 	}
 }
 
+void ABlasterCharacter::TurnInPlace(float DeltaTime)
+{
+	if (AO_Yaw > 90.f)
+	{
+		TurningInPlace = ETurnInPlace::ETIP_Right;
+	}
+	else if (AO_Yaw < -90.f)
+	{
+		TurningInPlace = ETurnInPlace::ETIP_Left;
+	}
+	if (TurningInPlace != ETurnInPlace::ETIP_NotTurning)
+	{
+		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0.f, DeltaTime, 4.f);
+		AO_Yaw = InterpAO_Yaw;
+
+		if (FMath::Abs(AO_Yaw) < 15.f)
+		{
+			TurningInPlace = ETurnInPlace::ETIP_NotTurning;
+			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		}
+	}
+}
+
 void ABlasterCharacter::AimOffset(float DeltaTime)
 {
 	if (Combat && Combat->EquippedWeapon == nullptr)
@@ -261,20 +271,26 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 	{
 		if (speed == 0.f && !bIsInAir)
 		{
-			/*
+			
 			FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 			FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
 
 			AO_Yaw = DeltaAimRotation.Yaw;
-			*/
 			
+			/* ESTO HACE QUE EL ROTATION SE VEA EN ONLINE, PERO ENTONCES LA ANIMACION DE ROTACION NO SE EJECUTA :( 
 			const FVector  AimDirWS = GetBaseAimRotation().Vector();
 			const FVector  AimDirLS = ActorToWorld().InverseTransformVectorNoScale(AimDirWS);
 			const FRotator AimRotLS = AimDirLS.Rotation();
 
 			AO_Yaw = AimRotLS.Yaw;
+			*/
 
-			bUseControllerRotationYaw = false;
+			if (TurningInPlace == ETurnInPlace::ETIP_NotTurning)
+			{
+				InterpAO_Yaw = AO_Yaw;
+			}
+
+			bUseControllerRotationYaw = true;
 			
 			TurnInPlace(DeltaTime);
 
@@ -284,17 +300,11 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 
 			AO_Yaw = 0.f;
-			bUseControllerRotationYaw = true;
+			bUseControllerRotationYaw = true; 
+			TurningInPlace = ETurnInPlace::ETIP_NotTurning;
 		}
 	}
 
-
-	if (!HasAuthority() && IsLocallyControlled())
-		CodeUtils::PrintFloatToScreen(AO_Yaw);
-	if (!HasAuthority() && !IsLocallyControlled())
-		CodeUtils::PrintFloatToScreen(AO_Yaw,FColor::Red);
-	if (HasAuthority() && !IsLocallyControlled())
-		CodeUtils::PrintFloatToScreen(AO_Yaw, FColor::Blue);
 
 	AO_Pitch = GetBaseAimRotation().Pitch;
 
