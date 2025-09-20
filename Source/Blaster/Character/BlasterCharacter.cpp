@@ -246,7 +246,7 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 	}
 	if (TurningInPlace != ETurnInPlace::ETIP_NotTurning)
 	{
-		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0.f, DeltaTime, 4.f);
+		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0.f, DeltaTime, 4.f); 
 		AO_Yaw = InterpAO_Yaw;
 
 		if (FMath::Abs(AO_Yaw) < 15.f)
@@ -267,8 +267,8 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 	float speed = velocity.Size();
 
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
-	if (IsLocallyControlled())
-	{
+	//if (IsLocallyControlled())
+	//{
 		if (speed == 0.f && !bIsInAir)
 		{
 			
@@ -277,13 +277,15 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 
 			AO_Yaw = DeltaAimRotation.Yaw;
 			
-			/* ESTO HACE QUE EL ROTATION SE VEA EN ONLINE, PERO ENTONCES LA ANIMACION DE ROTACION NO SE EJECUTA :( 
+			
+			/*ESTO HACE QUE EL ROTATION SE VEA EN ONLINE, PERO ENTONCES LA ANIMACION DE ROTACION NO SE EJECUTA :( 
 			const FVector  AimDirWS = GetBaseAimRotation().Vector();
 			const FVector  AimDirLS = ActorToWorld().InverseTransformVectorNoScale(AimDirWS);
 			const FRotator AimRotLS = AimDirLS.Rotation();
 
 			AO_Yaw = AimRotLS.Yaw;
 			*/
+			
 
 			if (TurningInPlace == ETurnInPlace::ETIP_NotTurning)
 			{
@@ -303,7 +305,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 			bUseControllerRotationYaw = true; 
 			TurningInPlace = ETurnInPlace::ETIP_NotTurning;
 		}
-	}
+	//}
 
 
 	AO_Pitch = GetBaseAimRotation().Pitch;
