@@ -30,10 +30,12 @@ protected:
 	void Move(const FInputActionInstance& Instance);
 	void Look(const FInputActionInstance& Instance);
 	void Jump(const FInputActionInstance& Instance);
+	//virtual void Jump() override;
 	void EquipPressed(const FInputActionInstance& Instance);
 	void CrouchPressed(const FInputActionInstance& Instance);
 	void AimPressed(const FInputActionInstance& Instance);
 	void AimReleased(const FInputActionInstance& Instance);
+	
 
 	void AimOffset(float DeltaTime);
 

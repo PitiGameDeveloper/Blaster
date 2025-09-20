@@ -44,7 +44,7 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
-
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 0.f, 850.f);
 
 	TurningInPlace = ETurnInPlace::ETIP_NotTurning;
 
@@ -187,8 +187,14 @@ void ABlasterCharacter::Look(const FInputActionInstance& Instance)
 
 void ABlasterCharacter::Jump(const FInputActionInstance& Instance)
 {
-	Super::Jump();
-	UE_LOG(LogTemp, Display, TEXT("JumpAction"));
+	CodeUtils::PrintToScreen("saltando");
+
+	if (bIsCrouched)
+		UnCrouch();
+	else
+	{
+		Super::Jump();
+	}
 }
 
 void ABlasterCharacter::EquipPressed(const FInputActionInstance& Instance)
