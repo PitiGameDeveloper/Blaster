@@ -17,6 +17,7 @@
 #include "Blaster/CodeUtils/CodeUtils.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "BlasterAnimInstance.h"
 
 
 // Sets default values
@@ -61,6 +62,23 @@ void ABlasterCharacter::PostInitializeComponents()
 	{
 		Combat->Character = this;
 	}
+}
+
+void ABlasterCharacter::PlayFireMontage(bool bAiming)
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && FireWeaponMontage)
+	{
+
+		AnimInstance->Montage_Play(FireWeaponMontage);
+		FName SectionName;
+		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+	
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -110,6 +128,14 @@ void ABlasterCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 		}
 		else
 			CodeUtils::PrintToScreen("Missing AimAction IA");
+
+		if (FireAction)
+		{
+			Input->BindAction(FireAction, ETriggerEvent::Started, this, &ABlasterCharacter::FirePressed);
+			Input->BindAction(FireAction, ETriggerEvent::Completed, this, &ABlasterCharacter::FireReleased);
+		}
+		else
+			CodeUtils::PrintToScreen("Missing FireAction IA");
 
 	}
 }
@@ -194,6 +220,23 @@ void ABlasterCharacter::Jump(const FInputActionInstance& Instance)
 	else
 	{
 		Super::Jump();
+	}
+}
+
+
+void ABlasterCharacter::FirePressed(const FInputActionInstance& Instance)
+{
+	if (Combat)
+	{
+
+		Combat->FirePressed(true);
+	}
+}
+void ABlasterCharacter::FireReleased(const FInputActionInstance& Instance)
+{
+	if (Combat)
+	{
+		Combat->FirePressed(false);
 	}
 }
 

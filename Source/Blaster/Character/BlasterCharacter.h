@@ -22,6 +22,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
+	void PlayFireMontage(bool bAiming);
 
 protected:
 	// Called when the game starts or when spawned
@@ -30,6 +31,8 @@ protected:
 	void Move(const FInputActionInstance& Instance);
 	void Look(const FInputActionInstance& Instance);
 	void Jump(const FInputActionInstance& Instance);
+	void FirePressed(const FInputActionInstance& Instance);
+	void FireReleased(const FInputActionInstance& Instance);
 	//virtual void Jump() override;
 	void EquipPressed(const FInputActionInstance& Instance);
 	void CrouchPressed(const FInputActionInstance& Instance);
@@ -61,6 +64,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Input)
 	UInputAction* AimAction;
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* FireAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadonly, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* OverheadWidget;
@@ -94,6 +100,9 @@ private:
 	ETurnInPlace TurningInPlace;
 
 	void TurnInPlace(float DeltaTime);
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	class UAnimMontage* FireWeaponMontage;
 
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);

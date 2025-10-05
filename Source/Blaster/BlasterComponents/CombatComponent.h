@@ -31,6 +31,8 @@ protected:
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
+	void FirePressed(bool bPressed);
+
 private:
 	class ABlasterCharacter* Character;
 
@@ -51,6 +53,8 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float AimCrouchSpeed;
+
+	bool bFirePressed;
 public:	 
 
 		

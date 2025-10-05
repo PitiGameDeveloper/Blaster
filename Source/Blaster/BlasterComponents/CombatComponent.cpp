@@ -103,3 +103,14 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	}
 }
 
+void UCombatComponent::FirePressed(bool bPressed)
+{
+	bFirePressed = bPressed;
+
+	if (Character && bFirePressed)
+	{
+
+		Character->PlayFireMontage(bAiming);
+	}
+}
+
