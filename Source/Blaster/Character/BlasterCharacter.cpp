@@ -38,6 +38,7 @@ ABlasterCharacter::ABlasterCharacter()
 
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(RootComponent);
+	OverheadWidget->SetIsReplicated(true);
 
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);
@@ -228,7 +229,7 @@ void ABlasterCharacter::FirePressed(const FInputActionInstance& Instance)
 {
 	if (Combat)
 	{
-
+		CodeUtils::PrintToScreen(GetName() + " Mising fire animation");
 		Combat->FirePressed(true);
 	}
 }
