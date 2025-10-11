@@ -6,10 +6,13 @@
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Blaster/CodeUtils/CodeUtils.h"
+#include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
+
 
 UCombatComponent::UCombatComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 
 	BaseWalkSpeed = 600.f;
 	AimWalkSpeed = 450.f;
@@ -28,10 +31,14 @@ void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SetComponentTickEnabled(true);
+
 	if (Character)
 	{
 		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 		BaseCrouchSpeed = Character->GetCharacterMovement()->MaxWalkSpeedCrouched;
+
+		CodeUtils::PrintToScreen("start");
 	}
 	else
 	{
@@ -69,6 +76,9 @@ void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	FHitResult HitResult;
+	TraceUnderCrosshairs(HitResult);
+	CodeUtils::PrintToScreen("Tick");
 
 }
 
@@ -98,6 +108,58 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	{
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
+	}
+}
+
+void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
+{
+	FVector2D ViewportSize;
+	if (GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	}
+
+	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
+
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
+		UGameplayStatics::GetPlayerController(this, 0),
+		CrosshairLocation,
+		CrosshairWorldPosition,
+		CrosshairWorldDirection
+	);
+	CodeUtils::PrintToScreen("0");
+
+	if (bScreenToWorld)
+	{
+		CodeUtils::PrintToScreen("1");
+		FVector Start = CrosshairWorldPosition;
+
+		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
+
+		GetWorld()->LineTraceSingleByChannel(
+			TraceHitResult,
+			Start,
+			End,
+			ECollisionChannel::ECC_Visibility
+		);
+
+		if (!TraceHitResult.bBlockingHit)
+		{
+			CodeUtils::PrintToScreen("2");
+			TraceHitResult.ImpactPoint = End;
+		}
+		else {
+			DrawDebugSphere(
+				GetWorld(),
+				TraceHitResult.ImpactPoint,
+				20.f,
+				12,
+				FColor::Red
+			);
+		}
 	}
 }
 
