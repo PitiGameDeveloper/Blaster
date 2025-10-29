@@ -81,7 +81,7 @@ private:
 	class AWeapon* OverlappingWeapon;
 
 	UPROPERTY(VisibleAnywhere)
-	class UCombatComponentWithTick* Combat;
+	class UCombatComponent* Combat;
 
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
