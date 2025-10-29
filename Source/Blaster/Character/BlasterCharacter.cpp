@@ -13,6 +13,7 @@
 #include "Components/WidgetComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Blaster/Weapon/Weapon.h"
+#include "Blaster/BlasterComponents/CombatComponentWithTick.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Blaster/CodeUtils/CodeUtils.h"
 #include "Components/CapsuleComponent.h"
