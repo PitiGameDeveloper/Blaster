@@ -78,7 +78,6 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	FHitResult HitResult;
 	TraceUnderCrosshairs(HitResult);
-	CodeUtils::PrintToScreen("Tick");
 
 }
 
@@ -130,11 +129,9 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		CrosshairWorldPosition,
 		CrosshairWorldDirection
 	);
-	CodeUtils::PrintToScreen("0");
 
 	if (bScreenToWorld)
 	{
-		CodeUtils::PrintToScreen("1");
 		FVector Start = CrosshairWorldPosition;
 
 		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
@@ -148,7 +145,6 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 
 		if (!TraceHitResult.bBlockingHit)
 		{
-			CodeUtils::PrintToScreen("2");
 			TraceHitResult.ImpactPoint = End;
 		}
 		else {

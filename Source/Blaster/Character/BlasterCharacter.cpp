@@ -215,8 +215,6 @@ void ABlasterCharacter::Look(const FInputActionInstance& Instance)
 
 void ABlasterCharacter::Jump(const FInputActionInstance& Instance)
 {
-	CodeUtils::PrintToScreen("saltando");
-
 	if (bIsCrouched)
 		UnCrouch();
 	else
@@ -244,10 +242,8 @@ void ABlasterCharacter::FireReleased(const FInputActionInstance& Instance)
 
 void ABlasterCharacter::EquipPressed(const FInputActionInstance& Instance)
 {
-	CodeUtils::PrintToScreen("Pressed");
 	if (Combat)
 	{
-		CodeUtils::PrintToScreen("inCombat");
 		if (HasAuthority())
 			Combat->EquipWeapon(OverlappingWeapon);
 		else
