@@ -183,7 +183,7 @@ void UCombatComponentWithTick::MulticastFire_Implementation()
 	if (Character)
 	{
 		Character->PlayFireMontage(bAiming);
-		EquippedWeapon->Fire();
+		//EquippedWeapon->Fire(HitTarget);
 	}
 }
 

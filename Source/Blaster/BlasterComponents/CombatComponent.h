@@ -64,6 +64,8 @@ private:
 	float AimCrouchSpeed;
 
 	bool bFirePressed;
+
+	FVector HitTarget;
 public:	 
 
 		
