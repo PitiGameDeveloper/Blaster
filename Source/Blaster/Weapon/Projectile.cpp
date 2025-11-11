@@ -1,6 +1,9 @@
 #include "Projectile.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystem.h"
+#include "Particles/ParticleSystemComponent.h"
 
 AProjectile::AProjectile()
 {
@@ -16,12 +19,27 @@ AProjectile::AProjectile()
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
+
+
+
 }
 
 void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if (Tracer)
+	{
+		TracerComponent = UGameplayStatics::SpawnEmitterAttached(
+			Tracer,
+			CollisionBox,
+			FName(),
+			GetActorLocation(),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition
+		);
+	}
+
 }
 
 // Called every frame
