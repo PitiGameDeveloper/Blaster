@@ -9,30 +9,22 @@
 
 void AProjectileWeapon::Fire(const FVector& HitTarget)
 {
-
-	CodeUtils::PrintToScreen("5");
 	Super::Fire(HitTarget);
 	APawn* InstigatorPawn = Cast<APawn>(GetOwner());
-	const USkeletalMeshSocket* MuzzleSocket = GetWeaponMesh()->GetSocketByName(FName("Muzzle"));
-	if (MuzzleSocket)
+	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName(FName("MuzzleFlashSocket"));
+	if (MuzzleFlashSocket)
 	{
-
-		CodeUtils::PrintToScreen("1");
-		FTransform SocketTransform = MuzzleSocket->GetSocketTransform(GetWeaponMesh());
+		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 		FVector ToTarget = HitTarget - SocketTransform.GetLocation();
 		FRotator TargetRotation = ToTarget.Rotation();
 		if (ProjectileClass)
 		{
-
-			CodeUtils::PrintToScreen("2");
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.Owner = GetOwner();
 			SpawnParams.Instigator = InstigatorPawn;
 			UWorld* World = GetWorld();
 			if (World)
 			{
-
-				CodeUtils::PrintToScreen("3");
 				World->SpawnActor<AProjectile>(
 					ProjectileClass,
 					SocketTransform.GetLocation(),
@@ -41,5 +33,9 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 				);
 			}
 		}
+	}
+	else
+	{
+		CodeUtils::PrintToScreen("MuzzleFlashSocket not found in weapon mesh");
 	}
 }

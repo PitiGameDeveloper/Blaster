@@ -81,8 +81,6 @@ void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 
 void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("EndOverlap"));
 	ABlasterCharacter* blasterCharater = Cast<ABlasterCharacter>(OtherActor);
 	if (blasterCharater)
 	{
@@ -123,10 +121,8 @@ void AWeapon::ShowPickupWidget(bool bShowWidget)
 
 void AWeapon::Fire(const FVector& HitTarget)
 {
-	CodeUtils::PrintToScreen("4");
 	if (FireAnimation)
 	{
-
 		WeaponMesh->PlayAnimation(FireAnimation, false);
 	}
 }

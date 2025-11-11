@@ -37,8 +37,6 @@ void UCombatComponent::BeginPlay()
 	{
 		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 		BaseCrouchSpeed = Character->GetCharacterMovement()->MaxWalkSpeedCrouched;
-
-		CodeUtils::PrintToScreen("start");
 	}
 	else
 	{
@@ -93,6 +91,9 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	if (HandSocket)
 	{
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
+	}
+	else {
+		CodeUtils::PrintToScreen("RightHandSocket not found in weapon mesh");
 	}
 	
 	EquippedWeapon->SetOwner(Character);
