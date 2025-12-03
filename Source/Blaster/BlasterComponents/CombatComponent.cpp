@@ -8,8 +8,8 @@
 #include "Blaster/CodeUtils/CodeUtils.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
-#include "Blaster/PlayerController/BlasterPlayerController.h";
-#include "Blaster/HUD/BlasterHUD.h";
+#include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/HUD/BlasterHUD.h"
 
 
 UCombatComponent::UCombatComponent()
