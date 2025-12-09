@@ -71,4 +71,7 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = RightHandTransform, meta = (AllowPrivateAccess = "true"))
 	FRotator RightHandRotation;
 
+	UPROPERTY(BlueprintReadOnly, Category = RightHandTransform, meta = (AllowPrivateAccess = "true"))
+	bool bLocallyContorlled;
+
 };
