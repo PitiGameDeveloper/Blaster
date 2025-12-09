@@ -6,6 +6,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Blaster/Weapon/Weapon.h"
+#include "Blaster/CodeUtils/CodeUtils.h"
 
 void UBlasterAnimInstance::NativeInitializeAnimation()
 { 
@@ -65,5 +66,15 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float deltaTime)
 		BlasterCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransoform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
 		LeftHandTransoform.SetLocation(OutPosition);
 		LeftHandTransoform.SetRotation(FQuat(OutRotation));
+
+		FTransform RightHandTransform = BlasterCharacter->GetMesh()->GetSocketTransform(FName("Hand_R"), RTS_World);
+		RightHandRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - BlasterCharacter->GetHitTarget()));
+		CodeUtils::PrintToScreen(RightHandRotation.ToString());
+
+		FTransform MuzzleTipTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("MuzzleFlashSocket"), ERelativeTransformSpace::RTS_World);
+		FVector MuzzleX(FRotationMatrix(MuzzleTipTransform.GetRotation().Rotator()).GetUnitAxis(EAxis::X));
+		DrawDebugLine(GetWorld(), MuzzleTipTransform.GetLocation(), MuzzleTipTransform.GetLocation() + MuzzleX * 1000.f, FColor::Red);
+
+		DrawDebugLine(GetWorld(), MuzzleTipTransform.GetLocation(), BlasterCharacter->GetHitTarget() , FColor::Blue);
 	}
 }

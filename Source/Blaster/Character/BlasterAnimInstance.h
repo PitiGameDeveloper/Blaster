@@ -11,6 +11,7 @@
  * 
  */
 UCLASS()
+
 class BLASTER_API UBlasterAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
@@ -61,10 +62,13 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = Aiming, meta = (AllowPrivateAccess = "true"))
 	float AO_Pitch;
 
-	UPROPERTY(BlueprintReadOnly, Category = LefthandTransform, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = LeftHandTransform, meta = (AllowPrivateAccess = "true"))
 	FTransform LeftHandTransoform;
 
-	UPROPERTY(BlueprintReadOnly, Category = LefthandTransform, meta = (AllowPrivateAccess = "true"))
-	ETurnInPlace  TurningInPlace;
+	UPROPERTY(BlueprintReadOnly, Category = LeftHandTransform, meta = (AllowPrivateAccess = "true"))
+	ETurnInPlace TurningInPlace;
+
+	UPROPERTY(BlueprintReadOnly, Category = RightHandTransform, meta = (AllowPrivateAccess = "true"))
+	FRotator RightHandRotation;
 
 };
