@@ -8,11 +8,11 @@
 #include "InputMappingContext.h"
 #include "InputAction.h"
 #include "Blaster/BlasterTypes/TurnInPlace.h"
-
+#include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
 #include "BlasterCharacter.generated.h"
 
 UCLASS()
-class BLASTER_API ABlasterCharacter : public ACharacter
+class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
 	GENERATED_BODY()
 
