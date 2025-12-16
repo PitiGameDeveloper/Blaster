@@ -24,6 +24,9 @@ public:
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bAiming);
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastHit();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -38,9 +41,10 @@ protected:
 	void CrouchPressed(const FInputActionInstance& Instance);
 	void AimPressed(const FInputActionInstance& Instance);
 	void AimReleased(const FInputActionInstance& Instance);
-	
 
 	void AimOffset(float DeltaTime);
+
+	void PlayHitReactMontage();
 
 private:
 
@@ -103,6 +107,14 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* FireWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	class UAnimMontage* HitReactMontage;
+
+	void HideCameraIfCharacterClose();
+
+	UPROPERTY(EditAnywhere)
+	float CameraThreshold = 200.f;
 
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);

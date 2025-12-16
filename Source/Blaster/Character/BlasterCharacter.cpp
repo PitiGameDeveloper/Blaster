@@ -18,6 +18,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "BlasterAnimInstance.h"
+#include "Blaster/Blaster.h"
 
 
 // Sets default values
@@ -47,12 +48,38 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 0.f, 850.f);
 
 	TurningInPlace = ETurnInPlace::ETIP_NotTurning;
 
 	NetUpdateFrequency = 66.f;
 	MinNetUpdateFrequency = 33.f;
+
+}
+
+void ABlasterCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			if (InputMapping)
+			{
+				Subsystem->AddMappingContext(InputMapping, 0);
+			}
+		}
+	}
+
+}
+
+void ABlasterCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	AimOffset(DeltaTime);
+	HideCameraIfCharacterClose();
 
 }
 
@@ -81,6 +108,23 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 	
+}
+
+void ABlasterCharacter::PlayHitReactMontage()
+{
+	CodeUtils::PrintToScreen("2");
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+	CodeUtils::PrintToScreen("3");
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && HitReactMontage)
+	{
+		CodeUtils::PrintToScreen("4");
+		AnimInstance->Montage_Play(HitReactMontage);
+		FName SectionName;
+		SectionName = FName("FromFront");
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -142,28 +186,30 @@ void ABlasterCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	}
 }
 
-void ABlasterCharacter::BeginPlay()
+void ABlasterCharacter::MulticastHit_Implementation()
 {
-	Super::BeginPlay();
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			if (InputMapping)
-			{
-				Subsystem->AddMappingContext(InputMapping, 0);
-			}
-		}
-	}
-
+	PlayHitReactMontage();
 }
 
-void ABlasterCharacter::Tick(float DeltaTime)
+void ABlasterCharacter::HideCameraIfCharacterClose()
 {
-	Super::Tick(DeltaTime);
+	if (!IsLocallyControlled()) return;
 
-	AimOffset(DeltaTime);
-
+	if ((FollowCamera->GetComponentLocation() - GetActorLocation()).Size() < CameraThreshold)
+	{
+		GetMesh()->SetVisibility(false);
+		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
+		{
+			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+		}
+	}
+	else {
+		GetMesh()->SetVisibility(true);
+		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
+		{
+			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		}
+	}
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
@@ -223,7 +269,6 @@ void ABlasterCharacter::Jump(const FInputActionInstance& Instance)
 	}
 }
 
-
 void ABlasterCharacter::FirePressed(const FInputActionInstance& Instance)
 {
 	if (Combat)
@@ -232,6 +277,7 @@ void ABlasterCharacter::FirePressed(const FInputActionInstance& Instance)
 		Combat->FirePressed(true);
 	}
 }
+
 void ABlasterCharacter::FireReleased(const FInputActionInstance& Instance)
 {
 	if (Combat)
