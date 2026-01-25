@@ -83,7 +83,11 @@ private:
 
 	float CrosshairShootingFactor;
 
+	float CrosshairOnEnemyFactor;
+
 	FHUDPackage HUDPackage;
+
+	bool bShrinkCrosshairOnEnemy = false;
 
 	/*
 	Aiming and FOV

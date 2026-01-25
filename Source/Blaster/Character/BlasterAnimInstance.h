@@ -74,4 +74,7 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = RightHandTransform, meta = (AllowPrivateAccess = "true"))
 	bool bLocallyContorlled;
 
+	UPROPERTY(BlueprintReadOnly, Category = RotatingProxy, meta = (AllowPrivateAccess = "true"))
+	bool bRotateRootBone;
+
 };

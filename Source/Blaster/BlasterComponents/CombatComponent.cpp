@@ -9,7 +9,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
-//#include "Blaster/HUD/BlasterHUD.h"
 #include "Camera/CameraComponent.h"
 
 
@@ -57,7 +56,6 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-
 	if (Character && Character->IsLocallyControlled())
 	{
 
@@ -80,6 +78,7 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
 		
 		Character->GetCharacterMovement()->MaxWalkSpeedCrouched = bIsAiming ? AimCrouchSpeed : BaseCrouchSpeed;
+
 	}
 }
 
@@ -174,10 +173,12 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 
 		if (TraceHitResult.GetActor() && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>())
 		{
-			HUDPackage.CrosshairsColor = FLinearColor::Red;
+			HUDPackage.CrosshairsColor = (FLinearColor::Red);
+			bShrinkCrosshairOnEnemy = true;
 		}
 		else {
 			HUDPackage.CrosshairsColor = FLinearColor::White;
+			bShrinkCrosshairOnEnemy = false;
 		}
 	}
 }
@@ -193,7 +194,7 @@ void UCombatComponent::FirePressed(bool bPressed)
 
 		if (EquippedWeapon)
 		{
-			CrosshairShootingFactor = 0.75f;
+			CrosshairShootingFactor = 1.f;
 		}
 	}
 }
@@ -255,19 +256,31 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 			if (bAiming)
 			{
 				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.8f, DeltaTime, 30.f);
+				CrosshairOnEnemyFactor = 0.f;
 			}
 			else {
 				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.f, DeltaTime, 30.f);
+
+				if (bShrinkCrosshairOnEnemy)
+				{
+					CrosshairOnEnemyFactor = FMath::FInterpTo(CrosshairOnEnemyFactor, 0.4f, DeltaTime, 10.f);
+				}
+				else {
+					CrosshairOnEnemyFactor = FMath::FInterpTo(CrosshairOnEnemyFactor, 0.0f, DeltaTime, 20.f);
+				}
 			}
 
-			CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime, 40.f);
+			CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime, 20.f);
 
-			HUDPackage.CrosshairSpread = 
-				0.5f 
-				+ CrosshairVelocityFactor 
-				+ CrosshairInAirFactor 
-				- CrosshairAimFactor 
+			HUDPackage.CrosshairSpread =
+				0.5f
+				+ CrosshairVelocityFactor
+				+ CrosshairInAirFactor
+				- CrosshairAimFactor
+				- CrosshairOnEnemyFactor
 				+ CrosshairShootingFactor;
+
+			
 
 			HUD->SetHUDPackage(HUDPackage);
 		}
