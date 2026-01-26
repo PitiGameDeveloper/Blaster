@@ -10,6 +10,7 @@
 #include "DrawDebugHelpers.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Camera/CameraComponent.h"
+#include "TimerManager.h"
 
 
 UCombatComponent::UCombatComponent()
@@ -68,31 +69,6 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	}
 }
 //////////////////////////////////////////////////////////////////////////////////
-void UCombatComponent::SetAiming(bool bIsAiming)
-{
-	bAiming = bIsAiming;
-	ServerSetAiming(bIsAiming);
-
-	if (Character)
-	{
-		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
-		
-		Character->GetCharacterMovement()->MaxWalkSpeedCrouched = bIsAiming ? AimCrouchSpeed : BaseCrouchSpeed;
-
-	}
-}
-
-void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
-{
-	bAiming = bIsAiming;
-
-	if (Character)
-	{
-		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
-		
-		Character->GetCharacterMovement()->MaxWalkSpeedCrouched = bIsAiming ? AimCrouchSpeed : BaseCrouchSpeed;
-	}
-}
 
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
@@ -102,7 +78,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
 	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
-	
+
 	if (HandSocket)
 	{
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
@@ -110,7 +86,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	else {
 		CodeUtils::PrintToScreen("RightHandSocket not found in weapon mesh");
 	}
-	
+
 	EquippedWeapon->SetOwner(Character);
 
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -188,17 +164,45 @@ void UCombatComponent::FirePressed(bool bPressed)
 	bFirePressed = bPressed;
 	if (bFirePressed)
 	{
-		FHitResult HitResult;
-		TraceUnderCrosshairs(HitResult);
-		ServerFire(HitResult.ImpactPoint);
+		Fire();
+	}
+}
 
+void UCombatComponent::Fire()
+{
+	if (bCanFire)
+	{
 		if (EquippedWeapon)
 		{
+			bCanFire = false;
+			ServerFire(HitTarget);
 			CrosshairShootingFactor = 1.f;
+			StartFireTimer();
 		}
 	}
 }
 
+void UCombatComponent::StartFireTimer()
+{
+	if (EquippedWeapon == nullptr || Character == nullptr) return;
+
+	Character->GetWorldTimerManager().SetTimer(
+		FireTimer,
+		this,
+		&UCombatComponent::FireTimerFinished,
+		EquippedWeapon->FireDelay);
+}
+
+void UCombatComponent::FireTimerFinished()
+{
+	bCanFire = true;
+	if (EquippedWeapon == nullptr) return;
+
+	if (bFirePressed && EquippedWeapon->bAutomatic)
+	{
+		Fire();
+	}
+}
 void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
 	MulticastFire(TraceHitTarget);
@@ -232,7 +236,7 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 				HUDPackage.CrosshairTop = EquippedWeapon->CrosshairsTop;
 				HUDPackage.CrosshairBottom = EquippedWeapon->CrosshairsBottom;
 			}
-			else 
+			else
 			{
 				HUDPackage.CrosshairCenter = HUDPackage.CrosshairLeft = HUDPackage.CrosshairRight = HUDPackage.CrosshairTop = HUDPackage.CrosshairBottom = nullptr;
 			}
@@ -266,7 +270,7 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 					CrosshairOnEnemyFactor = FMath::FInterpTo(CrosshairOnEnemyFactor, 0.4f, DeltaTime, 10.f);
 				}
 				else {
-					CrosshairOnEnemyFactor = FMath::FInterpTo(CrosshairOnEnemyFactor, 0.0f, DeltaTime, 20.f);
+					CrosshairOnEnemyFactor = FMath::FInterpTo(CrosshairOnEnemyFactor, 0.f, DeltaTime, 20.f);
 				}
 			}
 
@@ -280,7 +284,7 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 				- CrosshairOnEnemyFactor
 				+ CrosshairShootingFactor;
 
-			
+
 
 			HUD->SetHUDPackage(HUDPackage);
 		}
@@ -302,6 +306,32 @@ void UCombatComponent::InterpFOV(float DeltaTime)
 	if (Character && Character->GetFollowCamera())
 	{
 		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
+	}
+}
+
+void UCombatComponent::SetAiming(bool bIsAiming)
+{
+	bAiming = bIsAiming;
+	ServerSetAiming(bIsAiming);
+
+	if (Character)
+	{
+		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
+
+		Character->GetCharacterMovement()->MaxWalkSpeedCrouched = bIsAiming ? AimCrouchSpeed : BaseCrouchSpeed;
+
+	}
+}
+
+void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
+{
+	bAiming = bIsAiming;
+
+	if (Character)
+	{
+		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
+
+		Character->GetCharacterMovement()->MaxWalkSpeedCrouched = bIsAiming ? AimCrouchSpeed : BaseCrouchSpeed;
 	}
 }
 
