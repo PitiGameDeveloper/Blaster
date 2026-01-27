@@ -203,6 +203,7 @@ void UCombatComponent::FireTimerFinished()
 		Fire();
 	}
 }
+
 void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
 	MulticastFire(TraceHitTarget);
