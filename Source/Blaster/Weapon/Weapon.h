@@ -111,6 +111,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	class UAnimationAsset* FireAnimation;
 
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	class USoundBase* FireSound;
+
 
 public:
 	void SetWeaponState(EWeaponState State);
