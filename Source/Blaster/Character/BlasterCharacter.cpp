@@ -68,6 +68,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(ABlasterCharacter, Health)
 
 }
+
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -82,9 +83,63 @@ void ABlasterCharacter::BeginPlay()
 			}
 		}
 
-		BlasterPlayerController = Cast<ABlasterPlayerController>(Controller);
+		UpdateHUDHealth();
 	}
 
+	if (HasAuthority())
+	{
+		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReciveDamage);
+	}
+
+}
+
+void ABlasterCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	if (UEnhancedInputComponent* Input = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+		if (MoveAction)
+			Input->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Move);
+		else
+			CodeUtils::PrintToScreen("Missing MoveAction IA");
+
+		if (LookAction)
+			Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Look);
+		else
+			CodeUtils::PrintToScreen("Missing LookAction IA");
+
+		if (JumpAction)
+			Input->BindAction(JumpAction, ETriggerEvent::Started, this, &ABlasterCharacter::Jump);
+		else
+			CodeUtils::PrintToScreen("Missing JumpAction IA");
+
+		if (EquipAction)
+			Input->BindAction(EquipAction, ETriggerEvent::Started, this, &ABlasterCharacter::EquipPressed);
+		else
+			CodeUtils::PrintToScreen("Missing EquipAction IA");
+
+		if (CrouchAction)
+			Input->BindAction(CrouchAction, ETriggerEvent::Started, this, &ABlasterCharacter::CrouchPressed);
+		else
+			CodeUtils::PrintToScreen("Missing CrouchAction IA");
+
+		if (AimAction)
+		{
+			Input->BindAction(AimAction, ETriggerEvent::Started, this, &ABlasterCharacter::AimPressed);
+			Input->BindAction(AimAction, ETriggerEvent::Completed, this, &ABlasterCharacter::AimReleased);
+		}
+		else
+			CodeUtils::PrintToScreen("Missing AimAction IA");
+
+		if (FireAction)
+		{
+			Input->BindAction(FireAction, ETriggerEvent::Started, this, &ABlasterCharacter::FirePressed);
+			Input->BindAction(FireAction, ETriggerEvent::Completed, this, &ABlasterCharacter::FireReleased);
+		}
+		else
+			CodeUtils::PrintToScreen("Missing FireAction IA");
+
+	}
 }
 
 void ABlasterCharacter::Tick(float DeltaTime)
@@ -149,59 +204,26 @@ void ABlasterCharacter::PlayHitReactMontage()
 	}
 }
 
-
-void ABlasterCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
+void ABlasterCharacter::ReciveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	if (UEnhancedInputComponent* Input = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
-	{
-		if (MoveAction)
-			Input->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Move);
-		else
-			CodeUtils::PrintToScreen("Missing MoveAction IA");
-
-		if (LookAction)
-			Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Look);
-		else
-			CodeUtils::PrintToScreen("Missing LookAction IA");
-
-		if (JumpAction)
-			Input->BindAction(JumpAction, ETriggerEvent::Started, this, &ABlasterCharacter::Jump);
-		else
-			CodeUtils::PrintToScreen("Missing JumpAction IA");
-
-		if (EquipAction)
-			Input->BindAction(EquipAction, ETriggerEvent::Started, this, &ABlasterCharacter::EquipPressed);
-		else
-			CodeUtils::PrintToScreen("Missing EquipAction IA");
-
-		if (CrouchAction)
-			Input->BindAction(CrouchAction, ETriggerEvent::Started, this, &ABlasterCharacter::CrouchPressed);
-		else
-			CodeUtils::PrintToScreen("Missing CrouchAction IA");
-
-		if (AimAction)
-		{
-			Input->BindAction(AimAction, ETriggerEvent::Started, this, &ABlasterCharacter::AimPressed);
-			Input->BindAction(AimAction, ETriggerEvent::Completed, this, &ABlasterCharacter::AimReleased);
-		}
-		else
-			CodeUtils::PrintToScreen("Missing AimAction IA");
-
-		if (FireAction)
-		{
-			Input->BindAction(FireAction, ETriggerEvent::Started, this, &ABlasterCharacter::FirePressed);
-			Input->BindAction(FireAction, ETriggerEvent::Completed, this, &ABlasterCharacter::FireReleased);
-		}
-		else
-			CodeUtils::PrintToScreen("Missing FireAction IA");
-
-	}
+	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+	UpdateHUDHealth();
+	PlayHitReactMontage();
 }
 
-void ABlasterCharacter::MulticastHit_Implementation()
+void ABlasterCharacter::OnRep_Health()
 {
+	UpdateHUDHealth();
 	PlayHitReactMontage();
+}
+
+void ABlasterCharacter::UpdateHUDHealth()
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+	if (BlasterPlayerController)
+	{
+		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
 }
 
 void ABlasterCharacter::HideCameraIfCharacterClose()
@@ -225,9 +247,6 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 	}
 }
 
-void ABlasterCharacter::OnRep_Health()
-{
-}
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 {
