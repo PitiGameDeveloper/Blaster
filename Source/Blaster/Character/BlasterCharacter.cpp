@@ -19,6 +19,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "BlasterAnimInstance.h"
 #include "Blaster/Blaster.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 
 
 // Sets default values
@@ -70,6 +71,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
@@ -79,6 +81,8 @@ void ABlasterCharacter::BeginPlay()
 				Subsystem->AddMappingContext(InputMapping, 0);
 			}
 		}
+
+		BlasterPlayerController = Cast<ABlasterPlayerController>(Controller);
 	}
 
 }
