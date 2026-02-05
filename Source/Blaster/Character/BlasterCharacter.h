@@ -24,8 +24,9 @@ public:
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bAiming);
 
-
 	virtual void OnRep_ReplicatedMovement() override;
+
+	void Eliminated();
 
 protected:
 	// Called when the game starts or when spawned
