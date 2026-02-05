@@ -191,6 +191,15 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 
 }
 
+void ABlasterCharacter::PlayEliminatedMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && EliminatedMontage)
+	{
+		AnimInstance->Montage_Play(EliminatedMontage);
+	}
+}
+
 void ABlasterCharacter::PlayHitReactMontage()
 {
 	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
@@ -223,9 +232,10 @@ void ABlasterCharacter::ReciveDamage(AActor* DamagedActor, float Damage, const U
 	}
 }
 
-void ABlasterCharacter::Eliminated()
+void ABlasterCharacter::Eliminated_Implementation()
 {
-
+	bEliminated = true;
+	PlayEliminatedMontage();
 }
 
 void ABlasterCharacter::OnRep_Health()

@@ -23,9 +23,11 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bAiming);
+	void PlayEliminatedMontage();
 
 	virtual void OnRep_ReplicatedMovement() override;
 
+	UFUNCTION(NetMulticast, Reliable)
 	void Eliminated();
 
 protected:
@@ -119,6 +121,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* HitReactMontage;
 
+	UPROPERTY(EditAnywhere, Category = Combat)
+	class UAnimMontage* EliminatedMontage;
+
 	void HideCameraIfCharacterClose();
 
 	UPROPERTY(EditAnywhere)
@@ -149,6 +154,8 @@ private:
 
 	class ABlasterPlayerController* BlasterPlayerController;
 
+	bool bEliminated = false;
+
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
@@ -166,5 +173,7 @@ public:
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
+
+	FORCEINLINE bool IsEliminated() const { return bEliminated; }
 
 };
