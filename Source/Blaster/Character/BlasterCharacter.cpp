@@ -21,6 +21,7 @@
 #include "Blaster/Blaster.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
+#include "TimerManager.h"
 
 
 // Sets default values
@@ -232,7 +233,27 @@ void ABlasterCharacter::ReciveDamage(AActor* DamagedActor, float Damage, const U
 	}
 }
 
-void ABlasterCharacter::Eliminated_Implementation()
+void ABlasterCharacter::Eliminated() 
+{
+	MulticastEliminated();
+	GetWorldTimerManager().SetTimer(
+		EliminatedTimer,
+		this,
+		&ABlasterCharacter::EliminatedTimerFinished,
+		EliminatedDelay
+	);
+}
+
+void ABlasterCharacter::EliminatedTimerFinished()
+{
+	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	if (BlasterGameMode)
+	{
+		BlasterGameMode->RequestRespawn(this, Controller);
+	}
+}
+
+void ABlasterCharacter::MulticastEliminated_Implementation()
 {
 	bEliminated = true;
 	PlayEliminatedMontage();
@@ -273,7 +294,6 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 		}
 	}
 }
-
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 {
