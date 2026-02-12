@@ -28,7 +28,8 @@
 ABlasterCharacter::ABlasterCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	//<>
+	
+	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetMesh());
 	CameraBoom->TargetArmLength = 600.f;
@@ -217,18 +218,21 @@ void ABlasterCharacter::PlayHitReactMontage()
 
 void ABlasterCharacter::ReciveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
-	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
-	UpdateHUDHealth();
-	PlayHitReactMontage();
-
-	if (Health <= 0.f)
+	if (!bEliminated)
 	{
-		ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
-		if (BlasterGameMode)
+		Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+		UpdateHUDHealth();
+		PlayHitReactMontage();
+
+		if (Health <= 0.f)
 		{
-			BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
-			ABlasterPlayerController* CastedInstigatorController = Cast<ABlasterPlayerController>(InstigatorController);
-			BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, CastedInstigatorController);
+			ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+			if (BlasterGameMode)
+			{
+				BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+				ABlasterPlayerController* CastedInstigatorController = Cast<ABlasterPlayerController>(InstigatorController);
+				BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, CastedInstigatorController);
+			}
 		}
 	}
 }
