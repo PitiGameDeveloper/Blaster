@@ -28,7 +28,7 @@
 ABlasterCharacter::ABlasterCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	
+
 	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetMesh());
@@ -221,7 +221,10 @@ void ABlasterCharacter::ReciveDamage(AActor* DamagedActor, float Damage, const U
 void ABlasterCharacter::OnRep_Health()
 {
 	UpdateHUDHealth();
-	PlayHitReactMontage();
+	if (!bEliminated)
+	{
+		PlayHitReactMontage();
+	}
 }
 
 void ABlasterCharacter::UpdateHUDHealth()
@@ -247,8 +250,12 @@ void ABlasterCharacter::PlayHitReactMontage()
 	}
 }
 
-void ABlasterCharacter::Eliminated() 
+void ABlasterCharacter::Eliminated()
 {
+	if (Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->Drop();
+	}
 	MulticastEliminated();
 	GetWorldTimerManager().SetTimer(
 		EliminatedTimer,
@@ -262,6 +269,8 @@ void ABlasterCharacter::MulticastEliminated_Implementation()
 {
 	bEliminated = true;
 	PlayEliminatedMontage();
+
+	// Start dissolve effect
 	if (DissolveMaterialInstance)
 	{
 		DynamicDissolveMaterialInstance = UMaterialInstanceDynamic::Create(DissolveMaterialInstance, this);
@@ -270,6 +279,18 @@ void ABlasterCharacter::MulticastEliminated_Implementation()
 		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Glow"), 200.f);
 	}
 	StartDissolve();
+
+	// Disable character movement
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+	if (BlasterPlayerController)
+	{
+		DisableInput(BlasterPlayerController);
+	}
+
+	//Disable collision
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ABlasterCharacter::PlayEliminatedMontage()

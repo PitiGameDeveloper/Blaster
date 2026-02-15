@@ -11,7 +11,7 @@ enum class EWeaponState : uint8
 {
 	EWS_Initial UMETA(DisplayName = "Initial State"),
 	EWS_Equipped UMETA(DisplayName = "Equipped"),
-	EWS_Droped UMETA(DisplayName = "Droped"),
+	EWS_Dropped UMETA(DisplayName = "Dropped"),
 
 	EWS_MAX UMETA(DisplayName = "DefaultMAX")
 };
@@ -29,7 +29,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	void ShowPickupWidget(bool bShowWidget);
 	virtual void Fire(const FVector& HitTarget);
-
+	void Drop();
 
 	/**
 	* Textures for the weapon crosshairs

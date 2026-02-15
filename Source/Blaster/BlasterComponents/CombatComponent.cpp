@@ -77,8 +77,8 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
 
+	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
 	if (HandSocket)
 	{
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
@@ -97,6 +97,13 @@ void UCombatComponent::OnRep_EquippedWeapon()
 {
 	if (Character && EquippedWeapon)
 	{
+		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+
+		const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
+		if (HandSocket)
+		{
+			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
+		}
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
 	}

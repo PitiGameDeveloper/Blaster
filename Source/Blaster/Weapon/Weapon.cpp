@@ -72,6 +72,8 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	DOREPLIFETIME(AWeapon, WeaponState);
 }
 
+/////////////
+
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SeweepResult)
 {
 	ABlasterCharacter* blasterCharater = Cast<ABlasterCharacter>(OtherActor);
@@ -99,8 +101,21 @@ void AWeapon::SetWeaponState(EWeaponState State)
 	case EWeaponState::EWS_Equipped:
 		ShowPickupWidget(false);
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		WeaponMesh->SetSimulatePhysics(false);
+		WeaponMesh->SetEnableGravity(false);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		break;
-	}
+
+	case EWeaponState::EWS_Dropped:
+		if (HasAuthority())
+		{
+			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
+		WeaponMesh->SetSimulatePhysics(true);
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		break;
+}
 }
 
 void AWeapon::OnRep_WeaponState()
@@ -109,6 +124,19 @@ void AWeapon::OnRep_WeaponState()
 	{
 		case EWeaponState::EWS_Equipped:
 			ShowPickupWidget(false);
+			WeaponMesh->SetSimulatePhysics(false);
+			WeaponMesh->SetEnableGravity(false);
+			WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			break;
+
+		case EWeaponState::EWS_Dropped:
+			if (HasAuthority())
+			{
+				AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			}
+			WeaponMesh->SetSimulatePhysics(true);
+			WeaponMesh->SetEnableGravity(true);
+			WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 			break;
 	}
 }
@@ -131,5 +159,13 @@ void AWeapon::Fire(const FVector& HitTarget)
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), FireSound);
 	}
+}
+
+void AWeapon::Drop()
+{
+	SetWeaponState(EWeaponState::EWS_Dropped);
+	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
+	WeaponMesh->DetachFromComponent(DetachRules);
+	SetOwner(nullptr);
 }
 
