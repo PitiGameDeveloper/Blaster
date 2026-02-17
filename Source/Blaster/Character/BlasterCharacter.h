@@ -33,6 +33,8 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastEliminated();
 
+	virtual void Destroyed() override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -189,6 +191,19 @@ private:
 	//Material instance set on the blueprint used with the dynamic material instance
 	UPROPERTY(EditAnywhere, Category = Eliminated)
 	UMaterialInstance* DissolveMaterialInstance;
+
+	/*
+	 EliminatedBot
+	 */
+
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* EliminatedBotEffect;
+
+	UPROPERTY(VisibleAnywhere)
+	UParticleSystemComponent* EliminatedBotComponent;
+
+	UPROPERTY(EditAnywhere)
+	class USoundCue* EliminatedBotSound;
 
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);

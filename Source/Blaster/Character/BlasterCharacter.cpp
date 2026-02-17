@@ -22,6 +22,9 @@
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
 #include "TimerManager.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
+#include "Particles/ParticleSystemComponent.h"
 
 
 // Sets default values
@@ -72,6 +75,16 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME(ABlasterCharacter, Health)
 
+}
+
+void ABlasterCharacter::Destroyed()
+{
+	Super::Destroyed();
+
+	if (EliminatedBotComponent)
+	{
+		EliminatedBotComponent->DestroyComponent();
+	}
 }
 
 void ABlasterCharacter::BeginPlay()
@@ -276,7 +289,7 @@ void ABlasterCharacter::MulticastEliminated_Implementation()
 		DynamicDissolveMaterialInstance = UMaterialInstanceDynamic::Create(DissolveMaterialInstance, this);
 		GetMesh()->SetMaterial(0, DynamicDissolveMaterialInstance);
 		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
-		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Glow"), 200.f);
+		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Glow"), 1000.f);
 	}
 	StartDissolve();
 
@@ -291,6 +304,28 @@ void ABlasterCharacter::MulticastEliminated_Implementation()
 	//Disable collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+
+	//Spawn eliminated bot
+	if (EliminatedBotEffect)
+	{
+		FVector EliminatedBotSpawnPoint = GetActorLocation() + FVector(0.f, 0.f, 200.f);
+		EliminatedBotComponent = UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(), 
+			EliminatedBotEffect, 
+			EliminatedBotSpawnPoint, 
+			FRotator(0.f), 
+			true
+		);
+		if (EliminatedBotSound)
+		{
+			UGameplayStatics::SpawnSoundAtLocation(
+				this,
+				EliminatedBotSound,
+				GetActorLocation()
+			);
+		}
+	}
 }
 
 void ABlasterCharacter::PlayEliminatedMontage()
