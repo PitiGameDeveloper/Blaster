@@ -25,6 +25,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Blaster/PlayerState/BlasterPlayerState.h"
 
 
 // Sets default values
@@ -179,6 +180,7 @@ void ABlasterCharacter::Tick(float DeltaTime)
 	}
 	HideCameraIfCharacterClose();
 
+	PollInit();
 }
 
 void ABlasterCharacter::PostInitializeComponents()
@@ -227,6 +229,18 @@ void ABlasterCharacter::ReciveDamage(AActor* DamagedActor, float Damage, const U
 				ABlasterPlayerController* CastedInstigatorController = Cast<ABlasterPlayerController>(InstigatorController);
 				BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, CastedInstigatorController);
 			}
+		}
+	}
+}
+
+void ABlasterCharacter::PollInit()
+{
+	if (BlasterPlayerState == nullptr)
+	{
+		BlasterPlayerState = GetPlayerState<ABlasterPlayerState>();
+		if (BlasterPlayerState)
+		{
+			BlasterPlayerState->AddToScore(0.f);
 		}
 	}
 }
