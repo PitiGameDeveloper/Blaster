@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
+#include "Blaster/CodeUtils//CodeUtils.h"
 
 void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* EliminatedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController)
 {
@@ -16,6 +17,13 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* EliminatedCharacter, 
 	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState)
 	{
 		AttackerPlayerState->AddToScore(1.f);
+	}
+	
+	if (VictimPlayerState)
+	{
+		CodeUtils::PrintToScreen("GameModePrint");
+
+		VictimPlayerState->AddToDefeats(1);
 	}
 
 	if (EliminatedCharacter)

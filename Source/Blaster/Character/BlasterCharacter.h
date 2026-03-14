@@ -160,6 +160,7 @@ private:
 	UFUNCTION()
 	void OnRep_Health();
 
+	UPROPERTY()
 	class ABlasterPlayerController* BlasterPlayerController;
 
 	bool bEliminated = false;
@@ -208,6 +209,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	class USoundCue* EliminatedBotSound;
 
+	UPROPERTY()
 	class ABlasterPlayerState* BlasterPlayerState;
 
 public:
