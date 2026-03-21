@@ -326,10 +326,10 @@ void ABlasterCharacter::MulticastEliminated_Implementation()
 	{
 		FVector EliminatedBotSpawnPoint = GetActorLocation() + FVector(0.f, 0.f, 200.f);
 		EliminatedBotComponent = UGameplayStatics::SpawnEmitterAtLocation(
-			GetWorld(), 
-			EliminatedBotEffect, 
-			EliminatedBotSpawnPoint, 
-			FRotator(0.f), 
+			GetWorld(),
+			EliminatedBotEffect,
+			EliminatedBotSpawnPoint,
+			FRotator(0.f),
 			true
 		);
 		if (EliminatedBotSound)
@@ -358,6 +358,14 @@ void ABlasterCharacter::EliminatedTimerFinished()
 	if (BlasterGameMode)
 	{
 		BlasterGameMode->RequestRespawn(this, Controller);
+	}
+
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+
+
+	if (BlasterPlayerController)
+	{
+		BlasterPlayerController->ClientSetHUDDefeatOverlay(false);
 	}
 }
 

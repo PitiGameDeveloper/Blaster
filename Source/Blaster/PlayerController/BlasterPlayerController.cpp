@@ -4,6 +4,7 @@
 #include "BlasterPlayerController.h"
 #include "Blaster/HUD/BlasterHUD.h"
 #include "Blaster/HUD/CharacterOverlay.h"
+#include "Blaster/HUD/DefeatOverlay.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Blaster/Character/BlasterCharacter.h"
@@ -24,6 +25,19 @@ void ABlasterPlayerController::OnPossess(APawn* InPawn)
 	if (BlasterCharacter)
 	{
 		SetHUDHealth(BlasterCharacter->GetHealth(), BlasterCharacter->GetMaxHealth());
+	}
+
+
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->DefeatOverlay &&
+		BlasterHUD->CharacterOverlay->DefeatOverlay->DefeatText;
+
+	if (bHUDValid)
+	{
+		BlasterHUD->CharacterOverlay->DefeatOverlay->DefeatText->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 
@@ -63,8 +77,6 @@ void ABlasterPlayerController::SetHUDScore(float Score)
 
 void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
 {
-	CodeUtils::PrintToScreen("PlayerControllerPrint1");
-
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 
 	bool bHUDValid = BlasterHUD &&
@@ -73,9 +85,28 @@ void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
 
 	if (bHUDValid)
 	{
-		CodeUtils::PrintToScreen("PlayerControllerPrint2");
-
 		FString DefeatsText = FString::Printf(TEXT("%d"), Defeats);
 		BlasterHUD->CharacterOverlay->DefeatsAmount->SetText(FText::FromString(DefeatsText));
+	}
+
+}
+
+void ABlasterPlayerController::ClientSetHUDDefeatOverlay_Implementation(bool Show)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->DefeatOverlay &&
+		BlasterHUD->CharacterOverlay->DefeatOverlay->DefeatText;
+
+	CodeUtils::PrintToScreen("SetHUDDefeatOverlay");
+	if (bHUDValid)
+	{
+		CodeUtils::PrintToScreen("SetHUDDefeatOverlay2");
+		if (Show)
+			BlasterHUD->CharacterOverlay->DefeatOverlay->SetVisibility(ESlateVisibility::Visible);
+		else
+			BlasterHUD->CharacterOverlay->DefeatOverlay->SetVisibility(ESlateVisibility::Hidden);
 	}
 }

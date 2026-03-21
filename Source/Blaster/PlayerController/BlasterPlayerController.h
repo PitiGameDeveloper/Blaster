@@ -19,6 +19,8 @@ public:
 	void SetHUDHealth(float Health, float MaxHealth);
 	void SetHUDScore(float Score);
 	void SetHUDDefeats(int32 Defeats);
+	UFUNCTION(Client, Reliable)
+	void ClientSetHUDDefeatOverlay(bool Show);
 
 	virtual void OnPossess(APawn* InPawn) override;
 

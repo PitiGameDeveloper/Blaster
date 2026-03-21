@@ -21,9 +21,8 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* EliminatedCharacter, 
 	
 	if (VictimPlayerState)
 	{
-		CodeUtils::PrintToScreen("GameModePrint");
-
 		VictimPlayerState->AddToDefeats(1);
+		VictimController->ClientSetHUDDefeatOverlay(true);
 	}
 
 	if (EliminatedCharacter)
