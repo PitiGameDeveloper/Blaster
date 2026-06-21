@@ -117,16 +117,16 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	class USoundBase* FireSound;
 
-	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo, Category = "Weapon Properties")
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	int32 MagCapacity;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Ammo)
 	int32 Ammo;
 
 	void SpendRound();
 
 	UFUNCTION()
 	void OnRep_Ammo();
-
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	int32 MagCapacity;
 
 	UPROPERTY()
 	class ABlasterCharacter* BlasterOwnerCharacter;
@@ -142,6 +142,8 @@ public:
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 
 	FORCEINLINE float GetZoomeInterpSpeed() const { return ZoomInterpSpeed; }
+
+	FORCEINLINE bool IsEmpty() const { return Ammo <= 0; }
 
 
 };
