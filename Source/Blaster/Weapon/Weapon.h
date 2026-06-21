@@ -27,6 +27,9 @@ public:
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void OnRep_Owner() override;
+	void SetHUDWeaponAmmo();
+	void SetHUDWeaponAmmoVisible(bool Visibility);
 	void ShowPickupWidget(bool bShowWidget);
 	virtual void Fire(const FVector& HitTarget);
 	void Drop();
@@ -114,6 +117,21 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	class USoundBase* FireSound;
 
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo, Category = "Weapon Properties")
+	int32 Ammo;
+
+	void SpendRound();
+
+	UFUNCTION()
+	void OnRep_Ammo();
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	int32 MagCapacity;
+
+	UPROPERTY()
+	class ABlasterCharacter* BlasterOwnerCharacter;
+	UPROPERTY()
+	class ABlasterPlayerController* BlasterOwnerController;
 
 public:
 	void SetWeaponState(EWeaponState State);

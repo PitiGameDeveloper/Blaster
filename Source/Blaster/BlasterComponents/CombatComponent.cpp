@@ -74,7 +74,10 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (Character == nullptr || WeaponToEquip == nullptr)
 		return;
-
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Drop();
+	}
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
 
@@ -88,6 +91,8 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	}
 
 	EquippedWeapon->SetOwner(Character);
+	EquippedWeapon->SetHUDWeaponAmmoVisible(true);
+	EquippedWeapon->SetHUDWeaponAmmo();
 
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;

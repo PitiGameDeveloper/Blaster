@@ -91,6 +91,45 @@ void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
 
 }
 
+void ABlasterPlayerController::SetHUDWeaponAmmo(int32 WeaponAmmo)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->WeaponAmmoAmount;
+
+	if (bHUDValid)
+	{
+		FString WeaponAmmoText = FString::Printf(TEXT("%d"), WeaponAmmo);
+		BlasterHUD->CharacterOverlay->WeaponAmmoAmount->SetText(FText::FromString(WeaponAmmoText));
+	}
+}
+
+void ABlasterPlayerController::SetHUDWeaponAmmoVisible(bool Visibility)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->WeaponAmmoAmount &&
+		BlasterHUD->CharacterOverlay->WeaponAmmoText;
+
+	if (bHUDValid)
+	{
+		if (Visibility)
+		{
+			BlasterHUD->CharacterOverlay->WeaponAmmoText->SetVisibility(ESlateVisibility::Visible);
+			BlasterHUD->CharacterOverlay->WeaponAmmoAmount->SetVisibility(ESlateVisibility::Visible);
+		}
+		else
+		{
+			BlasterHUD->CharacterOverlay->WeaponAmmoText->SetVisibility(ESlateVisibility::Hidden);
+			BlasterHUD->CharacterOverlay->WeaponAmmoAmount->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+}
+
 void ABlasterPlayerController::ClientSetHUDDefeatOverlay_Implementation(bool Show)
 {
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
@@ -107,7 +146,7 @@ void ABlasterPlayerController::ClientSetHUDDefeatOverlay_Implementation(bool Sho
 		}
 		else
 		{
-			BlasterHUD->CharacterOverlay->DefeatOverlay->SetVisibility(ESlateVisibility::Collapsed);
+			BlasterHUD->CharacterOverlay->DefeatOverlay->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 }

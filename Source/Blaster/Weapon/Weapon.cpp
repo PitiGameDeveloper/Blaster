@@ -5,6 +5,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Net/UnrealNetwork.h"
 #include "Animation/AnimationAsset.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -36,7 +37,7 @@ AWeapon::AWeapon()
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
 	PickupWidget->SetupAttachment(RootComponent);
 
-	
+
 
 }
 
@@ -47,7 +48,7 @@ void AWeapon::BeginPlay()
 	if (PickupWidget)
 		PickupWidget->SetVisibility(false);
 
-	
+
 	if (HasAuthority()) {
 
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -70,6 +71,22 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AWeapon, WeaponState);
+	DOREPLIFETIME(AWeapon, Ammo);
+}
+
+void AWeapon::OnRep_Owner()
+{
+	Super::OnRep_Owner();
+	if (Owner == nullptr)
+	{
+		BlasterOwnerCharacter = nullptr;
+		BlasterOwnerController = nullptr;
+	}
+	else 
+	{
+		SetHUDWeaponAmmoVisible(true);
+		SetHUDWeaponAmmo();
+	}
 }
 
 /////////////
@@ -89,6 +106,50 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	if (blasterCharater)
 	{
 		blasterCharater->SetOverlappingWeapon(nullptr);
+	}
+}
+
+void AWeapon::SpendRound()
+{
+	--Ammo;
+	SetHUDWeaponAmmo();
+}
+
+void AWeapon::OnRep_Ammo()
+{
+	SetHUDWeaponAmmo();
+}
+
+void AWeapon::SetHUDWeaponAmmo()
+{
+	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
+	if (BlasterOwnerCharacter)
+	{
+		BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(BlasterOwnerCharacter->Controller) : BlasterOwnerController;
+		if (BlasterOwnerController)
+		{
+			BlasterOwnerController->SetHUDWeaponAmmo(Ammo);
+		}
+	}
+}
+
+void AWeapon::SetHUDWeaponAmmoVisible(bool Visibility)
+{
+	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
+	if (BlasterOwnerCharacter)
+	{
+		BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(BlasterOwnerCharacter->Controller) : BlasterOwnerController;
+		if (BlasterOwnerController)
+		{
+			if (Visibility)
+			{
+				BlasterOwnerController->SetHUDWeaponAmmoVisible(true);
+			}
+			else 
+			{
+				BlasterOwnerController->SetHUDWeaponAmmoVisible(false);
+			}
+		}
 	}
 }
 
@@ -115,29 +176,29 @@ void AWeapon::SetWeaponState(EWeaponState State)
 		WeaponMesh->SetEnableGravity(true);
 		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		break;
-}
+	}
 }
 
 void AWeapon::OnRep_WeaponState()
 {
-	switch (WeaponState) 
+	switch (WeaponState)
 	{
-		case EWeaponState::EWS_Equipped:
-			ShowPickupWidget(false);
-			WeaponMesh->SetSimulatePhysics(false);
-			WeaponMesh->SetEnableGravity(false);
-			WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			break;
+	case EWeaponState::EWS_Equipped:
+		ShowPickupWidget(false);
+		WeaponMesh->SetSimulatePhysics(false);
+		WeaponMesh->SetEnableGravity(false);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
 
-		case EWeaponState::EWS_Dropped:
-			if (HasAuthority())
-			{
-				AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-			}
-			WeaponMesh->SetSimulatePhysics(true);
-			WeaponMesh->SetEnableGravity(true);
-			WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			break;
+	case EWeaponState::EWS_Dropped:
+		if (HasAuthority())
+		{
+			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
+		WeaponMesh->SetSimulatePhysics(true);
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		break;
 	}
 }
 
@@ -159,13 +220,17 @@ void AWeapon::Fire(const FVector& HitTarget)
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), FireSound);
 	}
+	SpendRound();
 }
 
 void AWeapon::Drop()
 {
+	SetHUDWeaponAmmoVisible(false);
 	SetWeaponState(EWeaponState::EWS_Dropped);
 	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
 	WeaponMesh->DetachFromComponent(DetachRules);
 	SetOwner(nullptr);
+	BlasterOwnerCharacter = nullptr;
+	BlasterOwnerController = nullptr;
 }
 
