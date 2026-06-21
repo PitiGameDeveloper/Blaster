@@ -28,7 +28,7 @@ void ABlasterPlayerController::OnPossess(APawn* InPawn)
 	}
 
 
-	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	/*BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->CharacterOverlay &&
@@ -38,7 +38,7 @@ void ABlasterPlayerController::OnPossess(APawn* InPawn)
 	if (bHUDValid)
 	{
 		BlasterHUD->CharacterOverlay->DefeatOverlay->DefeatText->SetVisibility(ESlateVisibility::Hidden);
-	}
+	}*/
 }
 
 void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
@@ -97,16 +97,17 @@ void ABlasterPlayerController::ClientSetHUDDefeatOverlay_Implementation(bool Sho
 
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->CharacterOverlay &&
-		BlasterHUD->CharacterOverlay->DefeatOverlay &&
-		BlasterHUD->CharacterOverlay->DefeatOverlay->DefeatText;
+		BlasterHUD->CharacterOverlay->DefeatOverlay;
 
-	CodeUtils::PrintToScreen("SetHUDDefeatOverlay");
 	if (bHUDValid)
 	{
-		CodeUtils::PrintToScreen("SetHUDDefeatOverlay2");
 		if (Show)
+		{
 			BlasterHUD->CharacterOverlay->DefeatOverlay->SetVisibility(ESlateVisibility::Visible);
+		}
 		else
-			BlasterHUD->CharacterOverlay->DefeatOverlay->SetVisibility(ESlateVisibility::Hidden);
+		{
+			BlasterHUD->CharacterOverlay->DefeatOverlay->SetVisibility(ESlateVisibility::Collapsed);
+		}
 	}
 }
