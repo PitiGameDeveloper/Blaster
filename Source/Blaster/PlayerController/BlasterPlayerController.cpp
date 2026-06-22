@@ -8,6 +8,7 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Blaster/Character/BlasterCharacter.h"
+#include "Components/CanvasPanel.h"
 #include "Blaster/CodeUtils/CodeUtils.h"
 
 void ABlasterPlayerController::BeginPlay()
@@ -112,20 +113,17 @@ void ABlasterPlayerController::SetHUDWeaponAmmoVisible(bool Visibility)
 
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->CharacterOverlay &&
-		BlasterHUD->CharacterOverlay->WeaponAmmoAmount &&
-		BlasterHUD->CharacterOverlay->WeaponAmmoText;
+		BlasterHUD->CharacterOverlay->WeaponUICanvas;
 
 	if (bHUDValid)
 	{
 		if (Visibility)
 		{
-			BlasterHUD->CharacterOverlay->WeaponAmmoText->SetVisibility(ESlateVisibility::Visible);
-			BlasterHUD->CharacterOverlay->WeaponAmmoAmount->SetVisibility(ESlateVisibility::Visible);
+			BlasterHUD->CharacterOverlay->WeaponUICanvas->SetVisibility(ESlateVisibility::Visible);
 		}
 		else
 		{
-			BlasterHUD->CharacterOverlay->WeaponAmmoText->SetVisibility(ESlateVisibility::Hidden);
-			BlasterHUD->CharacterOverlay->WeaponAmmoAmount->SetVisibility(ESlateVisibility::Hidden);
+			BlasterHUD->CharacterOverlay->WeaponUICanvas->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 }

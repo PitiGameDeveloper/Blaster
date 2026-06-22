@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/CanvasPanel.h"
 #include "CharacterOverlay.generated.h"
 
 /**
@@ -22,16 +23,19 @@ public:
 	class UTextBlock* HealthText;
 
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* WeaponAmmoText;
-
-	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ScoreAmount;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* DefeatsAmount;
 
+	UPROPERTY(meta =(BindWidget))
+	UCanvasPanel* WeaponUICanvas;
+
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* WeaponAmmoAmount;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* CarriedAmmoAmount;
 
 	UPROPERTY(meta = (BindWidget))
 	class UDefeatOverlay* DefeatOverlay;

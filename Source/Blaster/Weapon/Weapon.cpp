@@ -83,10 +83,18 @@ void AWeapon::OnRep_Owner()
 		BlasterOwnerCharacter = nullptr;
 		BlasterOwnerController = nullptr;
 	}
-	else 
+	else
 	{
-		SetHUDWeaponAmmoVisible(true);
-		SetHUDWeaponAmmo();
+		BlasterOwnerCharacter = Cast<ABlasterCharacter>(GetOwner());
+		if (BlasterOwnerCharacter)
+		{
+			BlasterOwnerController = Cast<ABlasterPlayerController>(BlasterOwnerCharacter->Controller);
+			if (BlasterOwnerController && BlasterOwnerController->IsLocalController())
+			{
+				SetHUDWeaponAmmoVisible(true);
+				SetHUDWeaponAmmo();
+			}
+		}
 	}
 }
 
@@ -169,6 +177,7 @@ void AWeapon::SetWeaponState(EWeaponState State)
 		break;
 
 	case EWeaponState::EWS_Dropped:
+		SetHUDWeaponAmmoVisible(false);
 		if (HasAuthority())
 		{
 			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -192,6 +201,7 @@ void AWeapon::OnRep_WeaponState()
 		break;
 
 	case EWeaponState::EWS_Dropped:
+		SetHUDWeaponAmmoVisible(false);
 		if (HasAuthority())
 		{
 			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -226,10 +236,11 @@ void AWeapon::Fire(const FVector& HitTarget)
 
 void AWeapon::Drop()
 {
-	SetHUDWeaponAmmoVisible(false);
 	SetWeaponState(EWeaponState::EWS_Dropped);
+
 	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
 	WeaponMesh->DetachFromComponent(DetachRules);
+
 	SetOwner(nullptr);
 	BlasterOwnerCharacter = nullptr;
 	BlasterOwnerController = nullptr;
