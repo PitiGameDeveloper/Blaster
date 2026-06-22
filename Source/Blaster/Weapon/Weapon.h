@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "WeaponTypes.h"
+
 #include "Weapon.generated.h"
 
 UENUM(BlueprintType)
@@ -15,7 +17,6 @@ enum class EWeaponState : uint8
 
 	EWS_MAX UMETA(DisplayName = "DefaultMAX")
 };
-
 
 
 UCLASS()
@@ -135,6 +136,9 @@ private:
 
 	void ClearWeaponOwner();
 
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	EWeaponType WeaponType;
+
 public:
 	void SetWeaponState(EWeaponState State);
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
@@ -146,6 +150,8 @@ public:
 	FORCEINLINE float GetZoomeInterpSpeed() const { return ZoomInterpSpeed; }
 
 	FORCEINLINE bool IsEmpty() const { return Ammo <= 0; }
+
+	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
 
 
 };

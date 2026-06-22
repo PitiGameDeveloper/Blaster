@@ -20,6 +20,7 @@ public:
 	void SetHUDScore(float Score);
 	void SetHUDDefeats(int32 Defeats);
 	void SetHUDWeaponAmmo(int32 WeaponAmmo);
+	void SetHUDCarriedAmmo(int32 CarriedAmmo);
 	void SetHUDWeaponAmmoVisible(bool Visibility);
 	UFUNCTION(Client, Reliable)
 	void ClientSetHUDDefeatOverlay(bool Show);
