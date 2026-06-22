@@ -83,18 +83,10 @@ void AWeapon::OnRep_Owner()
 		BlasterOwnerCharacter = nullptr;
 		BlasterOwnerController = nullptr;
 	}
-	else
+	else 
 	{
-		BlasterOwnerCharacter = Cast<ABlasterCharacter>(GetOwner());
-		if (BlasterOwnerCharacter)
-		{
-			BlasterOwnerController = Cast<ABlasterPlayerController>(BlasterOwnerCharacter->Controller);
-			if (BlasterOwnerController && BlasterOwnerController->IsLocalController())
-			{
-				SetHUDWeaponAmmoVisible(true);
-				SetHUDWeaponAmmo();
-			}
-		}
+		SetHUDWeaponAmmoVisible(true);
+		SetHUDWeaponAmmo();
 	}
 }
 
@@ -234,13 +226,32 @@ void AWeapon::Fire(const FVector& HitTarget)
 	SpendRound();
 }
 
-void AWeapon::Drop()
-{
+void AWeapon::Drop()  
+{// PASO 1: Cambiamos el estado inmediatamente.
+	// Esto ejecuta SetWeaponState en el Servidor y OnRep_WeaponState en el Cliente.
+	// Como el Owner TODAVÍA existe en este milisegundo, ambos tienen los punteros intactos para ocultar el HUD.
 	SetWeaponState(EWeaponState::EWS_Dropped);
 
 	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
 	WeaponMesh->DetachFromComponent(DetachRules);
 
+	// PASO 2: Retrasamos la limpieza del Owner un suspiro (0.05s) para dar tiempo 
+	// a que el paquete de red de WeaponState llegue al cliente antes de que el Owner sea null.
+	if (GetWorld())
+	{
+		FTimerHandle DetachOwnerTimer;
+		GetWorld()->GetTimerManager().SetTimer(
+			DetachOwnerTimer,
+			this,
+			&AWeapon::ClearWeaponOwner, // Llamamos a una función auxiliar
+			0.05f,
+			false
+		);
+	}
+}
+// Crea esta pequeña función auxiliar en tu Weapon.cpp (y declárala en tu Weapon.h)
+void AWeapon::ClearWeaponOwner()
+{
 	SetOwner(nullptr);
 	BlasterOwnerCharacter = nullptr;
 	BlasterOwnerController = nullptr;

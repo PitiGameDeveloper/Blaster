@@ -133,6 +133,8 @@ private:
 	UPROPERTY()
 	class ABlasterPlayerController* BlasterOwnerController;
 
+	void ClearWeaponOwner();
+
 public:
 	void SetWeaponState(EWeaponState State);
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }

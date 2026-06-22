@@ -114,9 +114,10 @@ void ABlasterPlayerController::SetHUDWeaponAmmoVisible(bool Visibility)
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->CharacterOverlay &&
 		BlasterHUD->CharacterOverlay->WeaponUICanvas;
-
+	CodeUtils::PrintToScreen("SeHUDWeaponAmmoVisible 1", FColor::Blue);
 	if (bHUDValid)
 	{
+		CodeUtils::PrintToScreen("SeHUDWeaponAmmoVisible 2", FColor::Blue);
 		if (Visibility)
 		{
 			BlasterHUD->CharacterOverlay->WeaponUICanvas->SetVisibility(ESlateVisibility::Visible);
