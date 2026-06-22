@@ -49,6 +49,9 @@ protected:
 
 	void SetHUDCrosshairs(float DeltaTime);
 
+	UFUNCTION(Server, Reliable)
+	void ServerReload();
+
 private:
 	UPROPERTY()
 	class ABlasterCharacter* Character;
@@ -141,5 +144,6 @@ private:
 
 public:
 
+	void Reload();
 
 };

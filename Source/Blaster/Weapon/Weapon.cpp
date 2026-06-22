@@ -77,16 +77,25 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 
 void AWeapon::OnRep_Owner()
 {
-	Super::OnRep_Owner();
-	if (Owner == nullptr)
 	{
-		BlasterOwnerCharacter = nullptr;
-		BlasterOwnerController = nullptr;
-	}
-	else 
-	{
-		SetHUDWeaponAmmoVisible(true);
-		SetHUDWeaponAmmo();
+		Super::OnRep_Owner();
+
+		if (Owner == nullptr)
+		{
+			BlasterOwnerCharacter = nullptr;
+			BlasterOwnerController = nullptr;
+		}
+		else
+		{
+			BlasterOwnerCharacter = Cast<ABlasterCharacter>(GetOwner());
+			if (BlasterOwnerCharacter)
+			{
+				BlasterOwnerController = Cast<ABlasterPlayerController>(BlasterOwnerCharacter->Controller);
+			}
+
+			SetHUDWeaponAmmoVisible(true);
+			SetHUDWeaponAmmo();
+		}
 	}
 }
 
@@ -123,32 +132,39 @@ void AWeapon::OnRep_Ammo()
 
 void AWeapon::SetHUDWeaponAmmo()
 {
-	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
-	if (BlasterOwnerCharacter)
+	ABlasterCharacter* BlasterChar = Cast<ABlasterCharacter>(GetOwner());
+	if (BlasterChar)
 	{
-		BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(BlasterOwnerCharacter->Controller) : BlasterOwnerController;
-		if (BlasterOwnerController)
+		ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(BlasterChar->Controller);
+		if (BlasterPlayerController && BlasterPlayerController->IsLocalController())
 		{
-			BlasterOwnerController->SetHUDWeaponAmmo(Ammo);
+			BlasterPlayerController->SetHUDWeaponAmmo(Ammo);
 		}
 	}
 }
 
 void AWeapon::SetHUDWeaponAmmoVisible(bool Visibility)
 {
-	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
-	if (BlasterOwnerCharacter)
+	ABlasterCharacter* BlasterChar = Cast<ABlasterCharacter>(GetOwner());
+	if (BlasterChar)
 	{
-		BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(BlasterOwnerCharacter->Controller) : BlasterOwnerController;
-		if (BlasterOwnerController)
+		ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(BlasterChar->Controller);
+		if (BlasterPlayerController && BlasterPlayerController->IsLocalController())
 		{
-			if (Visibility)
+			BlasterPlayerController->SetHUDWeaponAmmoVisible(Visibility);
+			return;
+		}
+	}
+
+
+	if (!Visibility && GetWorld())
+	{
+		ABlasterPlayerController* LocalPlayerController = Cast<ABlasterPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		if (LocalPlayerController && LocalPlayerController->IsLocalController())
+		{
+			if (LocalPlayerController->GetPawn() == BlasterOwnerCharacter)
 			{
-				BlasterOwnerController->SetHUDWeaponAmmoVisible(true);
-			}
-			else 
-			{
-				BlasterOwnerController->SetHUDWeaponAmmoVisible(false);
+				LocalPlayerController->SetHUDWeaponAmmoVisible(false);
 			}
 		}
 	}
@@ -226,30 +242,26 @@ void AWeapon::Fire(const FVector& HitTarget)
 	SpendRound();
 }
 
-void AWeapon::Drop()  
-{// PASO 1: Cambiamos el estado inmediatamente.
-	// Esto ejecuta SetWeaponState en el Servidor y OnRep_WeaponState en el Cliente.
-	// Como el Owner TODAVÍA existe en este milisegundo, ambos tienen los punteros intactos para ocultar el HUD.
+void AWeapon::Drop()
+{
 	SetWeaponState(EWeaponState::EWS_Dropped);
 
 	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
 	WeaponMesh->DetachFromComponent(DetachRules);
 
-	// PASO 2: Retrasamos la limpieza del Owner un suspiro (0.05s) para dar tiempo 
-	// a que el paquete de red de WeaponState llegue al cliente antes de que el Owner sea null.
 	if (GetWorld())
 	{
 		FTimerHandle DetachOwnerTimer;
 		GetWorld()->GetTimerManager().SetTimer(
 			DetachOwnerTimer,
 			this,
-			&AWeapon::ClearWeaponOwner, // Llamamos a una función auxiliar
+			&AWeapon::ClearWeaponOwner,
 			0.05f,
 			false
 		);
 	}
 }
-// Crea esta pequeña función auxiliar en tu Weapon.cpp (y declárala en tu Weapon.h)
+
 void AWeapon::ClearWeaponOwner()
 {
 	SetOwner(nullptr);
