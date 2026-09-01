@@ -7,9 +7,6 @@
 #include "Blaster/BlasterTypes/TurnInPlace.h"
 #include "BlasterAnimInstance.generated.h"
 
-/**
- * 
- */
 UCLASS()
 
 class BLASTER_API UBlasterAnimInstance : public UAnimInstance
@@ -65,19 +62,22 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = LeftHandTransform, meta = (AllowPrivateAccess = "true"))
 	FTransform LeftHandTransoform;
 
-	UPROPERTY(BlueprintReadOnly, Category = LeftHandTransform, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	ETurnInPlace TurningInPlace;
 
 	UPROPERTY(BlueprintReadOnly, Category = RightHandTransform, meta = (AllowPrivateAccess = "true"))
 	FRotator RightHandRotation;
 
-	UPROPERTY(BlueprintReadOnly, Category = RightHandTransform, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = Other, meta = (AllowPrivateAccess = "true"))
 	bool bLocallyContorlled;
 
 	UPROPERTY(BlueprintReadOnly, Category = RotatingProxy, meta = (AllowPrivateAccess = "true"))
 	bool bRotateRootBone;
 
-	UPROPERTY(BlueprintReadOnly, Category = RotatingProxy, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = Death, meta = (AllowPrivateAccess = "true"))
 	bool bEliminated;
+
+	UPROPERTY(BlueprintReadOnly, Category = CombatState, meta = (AllowPrivateAccess = "true"))
+	bool bUseFABRIK;
 
 };
