@@ -125,7 +125,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	int32 MagCapacity;
 
-	UPROPERTY(ReplicatedUsing = OnRep_Ammo)
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties", ReplicatedUsing = OnRep_Ammo)
 	int32 Ammo;
 
 	void SpendRound();
@@ -153,7 +153,7 @@ public:
 
 	FORCEINLINE float GetZoomeInterpSpeed() const { return ZoomInterpSpeed; }
 
-	FORCEINLINE bool IsEmpty() const { return Ammo <= 0; }
+	FORCEINLINE bool IsOutOfAmmo() const { return Ammo <= 0; }
 
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
 

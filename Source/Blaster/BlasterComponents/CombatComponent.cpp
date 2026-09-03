@@ -120,8 +120,17 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		);
 	}
 
+	if (EquippedWeapon->IsOutOfAmmo())
+	{
+		Reload();
+	}
 
 	EquippedWeapon->SetHUDWeaponAmmoVisible(true);
+
+	if (EquippedWeapon->IsOutOfAmmo())
+	{
+		Reload();
+	}
 
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
@@ -253,12 +262,16 @@ void UCombatComponent::FireTimerFinished()
 	{
 		Fire();
 	}
+	if (EquippedWeapon->IsOutOfAmmo())
+	{
+		Reload();
+	}
 }
 
 bool UCombatComponent::CanFire()
 {
 	if (EquippedWeapon == nullptr) return false;
-	return bCanFire && !EquippedWeapon->IsEmpty() && CombatState == ECombatState::ECS_Unoccupied;
+	return bCanFire && !EquippedWeapon->IsOutOfAmmo() && CombatState == ECombatState::ECS_Unoccupied;
 }
 
 void UCombatComponent::OnRep_CarriedAmmo()
