@@ -80,4 +80,10 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = CombatState, meta = (AllowPrivateAccess = "true"))
 	bool bUseFABRIK;
 
+	UPROPERTY(BlueprintReadOnly, Category = CombatState, meta = (AllowPrivateAccess = "true"))
+	bool bUseAimOffsets;
+
+	UPROPERTY(BlueprintReadOnly, Category = CombatState, meta = (AllowPrivateAccess = "true"))
+	bool bTransformRightHand;
+
 };
