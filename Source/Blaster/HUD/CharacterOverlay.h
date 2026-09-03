@@ -39,4 +39,7 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UDefeatOverlay* DefeatOverlay;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* MatchCountdownText;
 };
