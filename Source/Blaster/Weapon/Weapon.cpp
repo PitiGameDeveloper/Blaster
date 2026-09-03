@@ -262,6 +262,12 @@ void AWeapon::Drop()
 	}
 }
 
+void AWeapon::AddAmmo(int32 AmmoToAdd)
+{
+	Ammo = FMath::Clamp(Ammo -  AmmoToAdd, 0, MagCapacity);
+	SetHUDWeaponAmmo();
+}
+
 void AWeapon::ClearWeaponOwner()
 {
 	SetOwner(nullptr);

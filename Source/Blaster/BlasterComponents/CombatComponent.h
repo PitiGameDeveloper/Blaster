@@ -58,6 +58,8 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void FinishReloading();
 
+	int32 AmountToReload();
+
 private:
 	UPROPERTY()
 	class ABlasterCharacter* Character;
@@ -154,6 +156,8 @@ private:
 
 	UFUNCTION()
 	void OnRep_CombatState();
+
+	void UpdateAmmoValues();
 
 public:
 
