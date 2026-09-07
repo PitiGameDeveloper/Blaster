@@ -31,9 +31,34 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	virtual float GetServerTime(); // Synced with server wold clock
+	virtual void ReceivedPlayer() override; // Synced with server clock as soon as possible
+
 protected:
 	virtual void BeginPlay() override;
 	void SetHUDTime();
+
+
+	/**
+	* Sync time between clinet and server
+	*/
+
+	//Requests the current server time, passing the client's time when the request was sent
+	UFUNCTION(Server, Reliable)
+	void ServerRequestServerTime(float TimeOfClientRequest);
+
+	//Reports the current server time to the client in response to the ServerRequestServerTime
+	UFUNCTION(Client, Reliable)
+	void ClientReportServerTime(float TimeOfClientRequest, float TimeServerReceivedClientRequest);
+
+	float ClientServerDelta = 0.f; // Diference between client and server time
+
+	UPROPERTY(EditAnywhere, Category = "Time")
+	float TimeSyncFrequency = 5.f;
+
+	float TimeSyncRunningTime = 0.f;
+
+	void CheckTimeSync(float DeltaTime);
 
 private:
 	class ABlasterHUD* BlasterHUD;
