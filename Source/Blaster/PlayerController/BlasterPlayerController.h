@@ -42,6 +42,7 @@ protected:
 	virtual void BeginPlay() override;
 	void SetHUDTime();
 	void PollInit();
+	void HandleMatchHasStarted();
 
 
 	/**

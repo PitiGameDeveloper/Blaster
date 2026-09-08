@@ -12,6 +12,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
 #include "Blaster/CodeUtils/CodeUtils.h"
+#include "Blaster/HUD/Announcement.h"
 
 
 void ABlasterPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -26,6 +27,12 @@ void ABlasterPlayerController::BeginPlay()
 	Super::BeginPlay();
 
 	BlasterHUD = Cast<ABlasterHUD>(GetHUD());
+
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	if (BlasterHUD)
+	{
+		BlasterHUD->AddAnnouncement();
+	}
 }
 
 void ABlasterPlayerController::Tick(float DeltaTime)
@@ -288,24 +295,36 @@ void ABlasterPlayerController::ReceivedPlayer()
 void ABlasterPlayerController::OnMatchStateSet(FName State)
 {
 	MatchState = State;
-	if (MatchState == MatchState::InProgress)
-	{
-		BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
-		if (BlasterHUD)
-		{
-			BlasterHUD->AddCharacterOverlay();
-		}
-	}
+	HandleMatchHasStarted();
+	
 }
 
 void ABlasterPlayerController::OnRep_MatchState()
 {
+	HandleMatchHasStarted();
+}
+
+void ABlasterPlayerController::HandleMatchHasStarted()
+{
+	/* Cant add this to the HUD because the HUD is not created yet when the match state is set to waiting to start. The HUD is created in the BeginPlay of the player controller, which is called after the match state is set to waiting to start. So we need to add the announcement in the BeginPlay of the player controller instead.
+	if (MatchState == MatchState::WaitingToStart)
+	{
+		BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+		if (BlasterHUD)
+		{
+			BlasterHUD->AddAnnouncement();
+		}
+	}*/
 	if (MatchState == MatchState::InProgress)
 	{
 		BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 		if (BlasterHUD)
 		{
 			BlasterHUD->AddCharacterOverlay();
+			if (BlasterHUD->Announcement)
+			{
+				BlasterHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
+			}
 		}
 	}
 }
