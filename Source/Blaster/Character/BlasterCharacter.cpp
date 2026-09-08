@@ -93,17 +93,13 @@ void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	if (const ULocalPlayer* Player = (GEngine && GetWorld()) ? GEngine->GetFirstGamePlayer(GetWorld()) : nullptr)
 	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(Player);
+		if (InputMapping)
 		{
-			if (InputMapping)
-			{
-				Subsystem->AddMappingContext(InputMapping, 0);
-			}
+			Subsystem->AddMappingContext(InputMapping, 0);
 		}
-
-		UpdateHUDHealth();
 	}
 
 	if (HasAuthority())
