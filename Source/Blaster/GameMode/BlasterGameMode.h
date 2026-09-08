@@ -21,6 +21,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "GameMode")
 	float WarmupTime = 10.f;
+	UPROPERTY(EditDefaultsOnly, Category = "GameMode")
+	float MatchTime = 120.f;
 
 	float LevelStartingTime = 0.f;
 
