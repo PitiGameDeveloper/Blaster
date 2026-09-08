@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "WeaponTypes.h"
+
 #include "Weapon.generated.h"
 
 UENUM(BlueprintType)
@@ -17,7 +19,6 @@ enum class EWeaponState : uint8
 };
 
 
-
 UCLASS()
 class BLASTER_API AWeapon : public AActor
 {
@@ -27,9 +28,13 @@ public:
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void OnRep_Owner() override;
+	void SetHUDWeaponAmmo();
+	void SetHUDWeaponAmmoVisible(bool Visibility);
 	void ShowPickupWidget(bool bShowWidget);
 	virtual void Fire(const FVector& HitTarget);
 	void Drop();
+	void AddAmmo(int32 AmmoToAdd);
 
 	/**
 	* Textures for the weapon crosshairs
@@ -69,6 +74,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	bool bAutomatic = true;
+
+	UPROPERTY(EditAnywhere)
+	class USoundCue* EquipSound;
 
 
 protected:
@@ -114,6 +122,26 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	class USoundBase* FireSound;
 
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	int32 MagCapacity;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties", ReplicatedUsing = OnRep_Ammo)
+	int32 Ammo;
+
+	void SpendRound();
+
+	UFUNCTION()
+	void OnRep_Ammo();
+
+	UPROPERTY()
+	class ABlasterCharacter* BlasterOwnerCharacter;
+	UPROPERTY()
+	class ABlasterPlayerController* BlasterOwnerController;
+
+	void ClearWeaponOwner();
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	EWeaponType WeaponType;
 
 public:
 	void SetWeaponState(EWeaponState State);
@@ -124,6 +152,14 @@ public:
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 
 	FORCEINLINE float GetZoomeInterpSpeed() const { return ZoomInterpSpeed; }
+
+	FORCEINLINE bool IsOutOfAmmo() const { return Ammo <= 0; }
+
+	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+
+	FORCEINLINE int32 GetAmmo() const { return Ammo; }
+
+	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
 
 
 };

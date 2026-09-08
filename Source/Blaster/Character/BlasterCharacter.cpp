@@ -26,6 +26,7 @@
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
+#include "Blaster/Weapon/WeaponTypes.h"
 
 
 // Sets default values
@@ -92,17 +93,13 @@ void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	if (const ULocalPlayer* Player = (GEngine && GetWorld()) ? GEngine->GetFirstGamePlayer(GetWorld()) : nullptr)
 	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(Player);
+		if (InputMapping)
 		{
-			if (InputMapping)
-			{
-				Subsystem->AddMappingContext(InputMapping, 0);
-			}
+			Subsystem->AddMappingContext(InputMapping, 0);
 		}
-
-		UpdateHUDHealth();
 	}
 
 	if (HasAuthority())
@@ -120,27 +117,27 @@ void ABlasterCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 		if (MoveAction)
 			Input->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Move);
 		else
-			CodeUtils::PrintToScreen("Missing MoveAction IA");
+			CodeUtils::PrintToScreen("Missing MoveAction InputAction");
 
 		if (LookAction)
 			Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Look);
 		else
-			CodeUtils::PrintToScreen("Missing LookAction IA");
+			CodeUtils::PrintToScreen("Missing LookAction InputAction");
 
 		if (JumpAction)
 			Input->BindAction(JumpAction, ETriggerEvent::Started, this, &ABlasterCharacter::Jump);
 		else
-			CodeUtils::PrintToScreen("Missing JumpAction IA");
+			CodeUtils::PrintToScreen("Missing JumpAction InputAction");
 
 		if (EquipAction)
 			Input->BindAction(EquipAction, ETriggerEvent::Started, this, &ABlasterCharacter::EquipPressed);
 		else
-			CodeUtils::PrintToScreen("Missing EquipAction IA");
+			CodeUtils::PrintToScreen("Missing EquipAction InputAction");
 
 		if (CrouchAction)
 			Input->BindAction(CrouchAction, ETriggerEvent::Started, this, &ABlasterCharacter::CrouchPressed);
 		else
-			CodeUtils::PrintToScreen("Missing CrouchAction IA");
+			CodeUtils::PrintToScreen("Missing CrouchAction InputAction");
 
 		if (AimAction)
 		{
@@ -148,7 +145,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 			Input->BindAction(AimAction, ETriggerEvent::Completed, this, &ABlasterCharacter::AimReleased);
 		}
 		else
-			CodeUtils::PrintToScreen("Missing AimAction IA");
+			CodeUtils::PrintToScreen("Missing AimAction InputAction");
 
 		if (FireAction)
 		{
@@ -156,7 +153,14 @@ void ABlasterCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 			Input->BindAction(FireAction, ETriggerEvent::Completed, this, &ABlasterCharacter::FireReleased);
 		}
 		else
-			CodeUtils::PrintToScreen("Missing FireAction IA");
+			CodeUtils::PrintToScreen("Missing FireAction InputAction");
+
+		if (ReloadAction)
+		{
+			Input->BindAction(ReloadAction, ETriggerEvent::Started, this, &ABlasterCharacter::ReloadPressed);
+		}
+		else
+			CodeUtils::PrintToScreen("Missing ReloadAction InputAction");
 
 	}
 }
@@ -210,6 +214,29 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 
+}
+
+void ABlasterCharacter::PlayReloadMontage()
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ReloadMontage)
+	{
+
+		AnimInstance->Montage_Play(ReloadMontage);
+		FName SectionName;
+
+		switch (Combat->EquippedWeapon->GetWeaponType())
+		{
+		case EWeaponType::EWT_AssaultRifle:
+			SectionName = FName("Rifle");
+			break;
+		}
+
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
 }
 
 void ABlasterCharacter::ReciveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
@@ -525,6 +552,14 @@ void ABlasterCharacter::AimReleased(const FInputActionInstance& Instance)
 	}
 }
 
+void ABlasterCharacter::ReloadPressed(const FInputActionInstance& Instance)
+{
+	if (Combat)
+	{
+		Combat->Reload();
+	}
+}
+
 void ABlasterCharacter::TurnInPlace(float DeltaTime)
 {
 	if (AO_Yaw > 90.f)
@@ -674,6 +709,12 @@ FVector ABlasterCharacter::GetHitTarget() const
 {
 	if (Combat == nullptr) return FVector();
 	return Combat->HitTarget;
+}
+
+ECombatState ABlasterCharacter::GetCombatState() const
+{
+	if (Combat == nullptr) return ECombatState::ECS_MAX;
+	return Combat->CombatState;
 }
 
 

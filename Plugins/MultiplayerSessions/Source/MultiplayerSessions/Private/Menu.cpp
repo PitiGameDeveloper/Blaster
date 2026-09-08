@@ -73,6 +73,17 @@ void UMenu::NativeDestruct()
 
 void UMenu::OnCreateSession(bool bWasSuccessful)
 {
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			15.f,
+			FColor::Yellow,
+			FString(
+				PathToLobby
+			)
+		);
+	}
 	if (bWasSuccessful)
 	{
 		UWorld* World = GetWorld();

@@ -10,6 +10,8 @@
 #include "Blaster/BlasterTypes/TurnInPlace.h"
 #include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
 #include "Components/TimelineComponent.h"
+#include "Blaster/BlasterTypes/CombatState.h"
+
 #include "BlasterCharacter.generated.h"
 
 UCLASS()
@@ -24,6 +26,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bAiming);
+	void PlayReloadMontage();
 	void PlayEliminatedMontage();
 
 	virtual void OnRep_ReplicatedMovement() override;
@@ -51,6 +54,7 @@ protected:
 	void CrouchPressed(const FInputActionInstance& Instance);
 	void AimPressed(const FInputActionInstance& Instance);
 	void AimReleased(const FInputActionInstance& Instance);
+	void ReloadPressed(const FInputActionInstance& Instance);
 
 	void AimOffset(float DeltaTime);
 	void CalculateAO_Pitch();
@@ -90,6 +94,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = Input)
 	UInputAction* FireAction;
 
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* ReloadAction;
+
 	UPROPERTY(EditAnywhere, BlueprintReadonly, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* OverheadWidget;
 
@@ -102,7 +109,7 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
 	class AWeapon* OverlappingWeapon;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UCombatComponent* Combat;
 
 	UFUNCTION()
@@ -125,6 +132,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* FireWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	class UAnimMontage* ReloadMontage;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* HitReactMontage;
@@ -160,7 +170,6 @@ private:
 	UFUNCTION()
 	void OnRep_Health();
 
-	UPROPERTY()
 	class ABlasterPlayerController* BlasterPlayerController;
 
 	bool bEliminated = false;
@@ -235,5 +244,7 @@ public:
 	FORCEINLINE float GetHealth() const { return Health; }
 
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
+
+	ECombatState GetCombatState() const;
 
 };
