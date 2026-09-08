@@ -39,6 +39,8 @@ public:
 
 	void OnMatchStateSet(FName State);
 
+	void HandleCooldown();
+
 protected:
 	virtual void BeginPlay() override;
 	void SetHUDTime();

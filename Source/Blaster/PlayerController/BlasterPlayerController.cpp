@@ -343,36 +343,52 @@ void ABlasterPlayerController::ReceivedPlayer()
 void ABlasterPlayerController::OnMatchStateSet(FName State)
 {
 	MatchState = State;
-	HandleMatchHasStarted();
+
+	if (MatchState == MatchState::InProgress)
+	{
+		HandleMatchHasStarted();
+	}
+	else if (MatchState == MatchState::Cooldown)
+	{
+		HandleCooldown();
+	}
 
 }
 
 void ABlasterPlayerController::OnRep_MatchState()
 {
-	HandleMatchHasStarted();
+	if (MatchState == MatchState::InProgress)
+	{
+		HandleMatchHasStarted();
+	}
+	else if (MatchState == MatchState::Cooldown)
+	{
+		HandleCooldown();
+	}
 }
 
 void ABlasterPlayerController::HandleMatchHasStarted()
 {
-	/* Cant add this to the HUD because the HUD is not created yet when the match state is set to waiting to start. The HUD is created in the BeginPlay of the player controller, which is called after the match state is set to waiting to start. So we need to add the announcement in the BeginPlay of the player controller instead.
-	if (MatchState == MatchState::WaitingToStart)
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	if (BlasterHUD)
 	{
-		BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
-		if (BlasterHUD)
+		BlasterHUD->AddCharacterOverlay();
+		if (BlasterHUD->Announcement)
 		{
-			BlasterHUD->AddAnnouncement();
+			BlasterHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
 		}
-	}*/
-	if (MatchState == MatchState::InProgress)
+	}
+}
+
+void ABlasterPlayerController::HandleCooldown()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	if (BlasterHUD)
 	{
-		BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
-		if (BlasterHUD)
+		BlasterHUD->CharacterOverlay->RemoveFromParent();
+		if (BlasterHUD->Announcement)
 		{
-			BlasterHUD->AddCharacterOverlay();
-			if (BlasterHUD->Announcement)
-			{
-				BlasterHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
-			}
+			BlasterHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 }
