@@ -62,6 +62,7 @@ void ABlasterPlayerController::ClientJoinMidGame_Implementation(FName StateOfMat
 
 	if (BlasterHUD && MatchState == MatchState::WaitingToStart)
 	{
+		CodeUtils::PrintToScreen("ClientJoinMidGame_Implementation WarmupTime", FColor::Yellow);
 		BlasterHUD->AddAnnouncement();
 	}
 }
@@ -77,11 +78,6 @@ void ABlasterPlayerController::ServerCheckMatchState_Implementation()
 		LevelStartingTime = GameMode->LevelStartingTime;
 		MatchState = GameMode->GetMatchState();
 		ClientJoinMidGame(MatchState, WarmupTime, MatchTime, LevelStartingTime);
-
-		if (BlasterHUD && MatchState == MatchState::WaitingToStart)
-		{
-			BlasterHUD->AddAnnouncement();
-		}
 	}
 }
 
