@@ -25,6 +25,8 @@ public:
 
 	void EquipWeapon(class AWeapon* WeaponToEquip);
 
+	void FirePressed(bool bPressed);
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -35,8 +37,6 @@ protected:
 
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
-
-	void FirePressed(bool bPressed);
 
 	void Fire();
 

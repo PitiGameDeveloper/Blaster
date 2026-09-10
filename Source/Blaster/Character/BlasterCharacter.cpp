@@ -75,7 +75,9 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
 
-	DOREPLIFETIME(ABlasterCharacter, Health)
+	DOREPLIFETIME(ABlasterCharacter, Health);
+
+	DOREPLIFETIME(ABlasterCharacter, bDisableGameplay);
 
 }
 
@@ -86,6 +88,11 @@ void ABlasterCharacter::Destroyed()
 	if (EliminatedBotComponent)
 	{
 		EliminatedBotComponent->DestroyComponent();
+	}
+
+	if (Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->Destroy();
 	}
 }
 
@@ -168,6 +175,20 @@ void ABlasterCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	RotateInPlace(DeltaTime);
+	HideCameraIfCharacterClose();
+
+	PollInit();
+}
+
+void ABlasterCharacter::RotateInPlace(float DeltaTime)
+{
+	if (bDisableGameplay)
+	{
+		bUseControllerRotationYaw = false;
+		TurningInPlace = ETurnInPlace::ETIP_NotTurning;
+		return;
+	}
 
 	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled())
 	{
@@ -182,9 +203,6 @@ void ABlasterCharacter::Tick(float DeltaTime)
 		}
 		CalculateAO_Pitch();
 	}
-	HideCameraIfCharacterClose();
-
-	PollInit();
 }
 
 void ABlasterCharacter::PostInitializeComponents()
@@ -338,10 +356,7 @@ void ABlasterCharacter::MulticastEliminated_Implementation()
 	// Disable character movement
 	GetCharacterMovement()->DisableMovement();
 	GetCharacterMovement()->StopMovementImmediately();
-	if (BlasterPlayerController)
-	{
-		DisableInput(BlasterPlayerController);
-	}
+	bDisableGameplay = true;
 
 	//Disable collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -467,6 +482,7 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 
 void ABlasterCharacter::Move(const FInputActionInstance& Instance)
 {
+	if (bDisableGameplay) return;
 	FVector2D MovementDirection = Instance.GetValue().Get<FVector2D>();
 	const FRotator Rotation(0.f, Controller->GetControlRotation().Yaw, Controller->GetControlRotation().Roll);
 	const FVector RightDirection(FRotationMatrix(Rotation).GetUnitAxis(EAxis::Y));
@@ -484,6 +500,7 @@ void ABlasterCharacter::Look(const FInputActionInstance& Instance)
 
 void ABlasterCharacter::Jump(const FInputActionInstance& Instance)
 {
+	if (bDisableGameplay) return;
 	if (bIsCrouched)
 		UnCrouch();
 	else
@@ -494,6 +511,7 @@ void ABlasterCharacter::Jump(const FInputActionInstance& Instance)
 
 void ABlasterCharacter::FirePressed(const FInputActionInstance& Instance)
 {
+	if (bDisableGameplay) return;
 	if (Combat)
 	{
 		CodeUtils::PrintToScreen(GetName() + " Mising fire animation");
@@ -503,6 +521,7 @@ void ABlasterCharacter::FirePressed(const FInputActionInstance& Instance)
 
 void ABlasterCharacter::FireReleased(const FInputActionInstance& Instance)
 {
+	if (bDisableGameplay) return;
 	if (Combat)
 	{
 		Combat->FirePressed(false);
@@ -511,6 +530,7 @@ void ABlasterCharacter::FireReleased(const FInputActionInstance& Instance)
 
 void ABlasterCharacter::EquipPressed(const FInputActionInstance& Instance)
 {
+	if (bDisableGameplay) return;
 	if (Combat)
 	{
 		if (HasAuthority())
@@ -538,6 +558,7 @@ void ABlasterCharacter::CrouchPressed(const FInputActionInstance& Instance)
 
 void ABlasterCharacter::AimPressed(const FInputActionInstance& Instance)
 {
+	if (bDisableGameplay) return;
 	if (Combat)
 	{
 		Combat->SetAiming(true);
@@ -546,6 +567,7 @@ void ABlasterCharacter::AimPressed(const FInputActionInstance& Instance)
 
 void ABlasterCharacter::AimReleased(const FInputActionInstance& Instance)
 {
+	if (bDisableGameplay) return;
 	if (Combat)
 	{
 		Combat->SetAiming(false);
@@ -554,6 +576,7 @@ void ABlasterCharacter::AimReleased(const FInputActionInstance& Instance)
 
 void ABlasterCharacter::ReloadPressed(const FInputActionInstance& Instance)
 {
+	if (bDisableGameplay) return;
 	if (Combat)
 	{
 		Combat->Reload();
