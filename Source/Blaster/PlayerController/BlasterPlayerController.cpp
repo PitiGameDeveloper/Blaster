@@ -248,6 +248,10 @@ void ABlasterPlayerController::ClientSetHUDDefeatOverlay_Implementation(bool Sho
 
 void ABlasterPlayerController::SetHUDMatchCountdown(float CountdownTime)
 {
+	uint32 SecondsLeft = FMath::CeilToInt(CountdownTime);
+
+	CodeUtils::PrintIntToScreen(SecondsLeft, FColor::Red);
+	CodeUtils::PrintFloatToScreen(CountdownTime, FColor::Blue);
 
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 
@@ -257,14 +261,21 @@ void ABlasterPlayerController::SetHUDMatchCountdown(float CountdownTime)
 
 	if (bHUDValid)
 	{
-		if (CountdownTime < 0.f) BlasterHUD->CharacterOverlay->MatchCountdownText->SetText(FText());
-		int32 Minutes = FMath::FloorToInt(CountdownTime / 60.f);
-		int32 Seconds = CountdownTime - Minutes * 60;
+		if (SecondsLeft < 0.f) BlasterHUD->CharacterOverlay->MatchCountdownText->SetText(FText());
+		int32 Minutes = FMath::FloorToInt(SecondsLeft / 60.f);
+		int32 Seconds = SecondsLeft - Minutes * 60;
 		FString CountdownText = FString::Printf(TEXT("%02d : %02d"), Minutes, Seconds);
 		BlasterHUD->CharacterOverlay->MatchCountdownText->SetText(FText::FromString(CountdownText));
-		if (CountdownTime < 20.f)
+		if (SecondsLeft < 10)
 		{
-			BlasterHUD->CharacterOverlay->MatchCountdownText->SetColorAndOpacity(FSlateColor(FLinearColor::Red));
+			if (static_cast<int>(CountdownTime * 2.0f) % 2 == 0)
+			{
+				BlasterHUD->CharacterOverlay->MatchCountdownText->SetColorAndOpacity(FSlateColor(FLinearColor::Red));
+			}
+			else
+			{
+				BlasterHUD->CharacterOverlay->MatchCountdownText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+			}
 		}
 		else
 		{
@@ -306,11 +317,11 @@ void ABlasterPlayerController::SetHUDTime()
 		if (BlasterGameMode) SecondsLeft = FMath::CeilToInt(BlasterGameMode->GetCountdownTime() + LevelStartingTime);
 	}
 
-	if (CountdownInt != SecondsLeft)
-	{
+	//if (CountdownInt != SecondsLeft)
+	//{
 		if (MatchState == MatchState::WaitingToStart || MatchState == MatchState::Cooldown)SetHUDAnnouncementCountdown(SecondsLeft);
-		else if (MatchState == MatchState::InProgress) SetHUDMatchCountdown(SecondsLeft);
-	}
+		else if (MatchState == MatchState::InProgress) SetHUDMatchCountdown(TimeLeft);
+	//}
 
 	CountdownInt = SecondsLeft;
 }
