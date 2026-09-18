@@ -250,9 +250,6 @@ void ABlasterPlayerController::SetHUDMatchCountdown(float CountdownTime)
 {
 	uint32 SecondsLeft = FMath::CeilToInt(CountdownTime);
 
-	CodeUtils::PrintIntToScreen(SecondsLeft, FColor::Red);
-	CodeUtils::PrintFloatToScreen(CountdownTime, FColor::Blue);
-
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 
 	bool bHUDValid = BlasterHUD &&
@@ -319,8 +316,8 @@ void ABlasterPlayerController::SetHUDTime()
 
 	//if (CountdownInt != SecondsLeft)
 	//{
-		if (MatchState == MatchState::WaitingToStart || MatchState == MatchState::Cooldown)SetHUDAnnouncementCountdown(SecondsLeft);
-		else if (MatchState == MatchState::InProgress) SetHUDMatchCountdown(TimeLeft);
+	if (MatchState == MatchState::WaitingToStart || MatchState == MatchState::Cooldown)SetHUDAnnouncementCountdown(SecondsLeft);
+	else if (MatchState == MatchState::InProgress) SetHUDMatchCountdown(TimeLeft);
 	//}
 
 	CountdownInt = SecondsLeft;
@@ -405,7 +402,7 @@ void ABlasterPlayerController::HandleMatchHasStarted()
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 	if (BlasterHUD)
 	{
-		BlasterHUD->AddCharacterOverlay();
+		if (BlasterHUD->CharacterOverlay == nullptr) BlasterHUD->AddCharacterOverlay();
 		if (BlasterHUD->Announcement)
 		{
 			BlasterHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);

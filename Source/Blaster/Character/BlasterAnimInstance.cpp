@@ -66,7 +66,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float deltaTime)
 
 	if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && BlasterCharacter->GetMesh())
 	{
-		LeftHandTransoform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSoket"), ERelativeTransformSpace::RTS_World);
+		LeftHandTransoform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSocket"), ERelativeTransformSpace::RTS_World);
 		FVector OutPosition;
 		FRotator OutRotation;
 		BlasterCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransoform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);

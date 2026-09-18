@@ -117,6 +117,8 @@ void ABlasterCharacter::BeginPlay()
 		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReciveDamage);
 	}
 
+	UpdateHUDHealth();
+
 }
 
 void ABlasterCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -360,6 +362,7 @@ void ABlasterCharacter::MulticastEliminated_Implementation()
 	GetCharacterMovement()->DisableMovement();
 	GetCharacterMovement()->StopMovementImmediately();
 	bDisableGameplay = true;
+
 	if (Combat)
 	{
 		Combat->FirePressed(false);
