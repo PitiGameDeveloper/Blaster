@@ -29,6 +29,9 @@ protected:
 	class UNiagaraSystem* TrailSystem;
 
 	class UNiagaraComponent* TrailSystemComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	class URocketMovementComponent* RocketMovementComponent;
 private:
 
 	UPROPERTY(VisibleAnywhere)
