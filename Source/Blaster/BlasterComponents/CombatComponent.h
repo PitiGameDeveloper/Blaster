@@ -154,6 +154,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	int32 StartingPistolAmmo = 10;
 
+	UPROPERTY(EditAnywhere)
+	int32 StartingMachineGunAmmo = 70;
+
 	void InitializeCarriedAmmo();
 
 
